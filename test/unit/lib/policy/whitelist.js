@@ -19,7 +19,7 @@ var srcPath = __dirname + "/../../../../lib/",
 
 describe("whitelist", function () {
     describe("when user includes a wildcard access", function () {
-        it("can allow access to any domain using uri *", function () {
+        it("can allow access to any domain not from XHR using uri *", function () {
             var whitelist = new Whitelist({
                 hasMultiAccess : true,
                 accessList : null
@@ -31,6 +31,23 @@ describe("whitelist", function () {
             expect(whitelist.isAccessAllowed("http://www.rim.com")).toEqual(true);
             expect(whitelist.isAccessAllowed("local:///index.html")).toEqual(true);
             expect(whitelist.isAccessAllowed("file://store/home/user/documents/file.doc")).toEqual(true);
+        });
+        it("can allow access to explicit domains only when XHR using uri *", function () {
+            var whitelist = new Whitelist({
+                hasMultiAccess : true,
+                accessList : [
+                    {
+                        uri : "http://google.com",
+                        allowSubDomain : true,
+                        features : null
+                    }
+                ]
+            });
+
+            expect(whitelist.isAccessAllowed("http://www.google.com", true)).toEqual(true);
+            expect(whitelist.isAccessAllowed("http://www.google.com/a/b/c", true)).toEqual(true);
+            expect(whitelist.isAccessAllowed("http://www.msn.com", true)).toEqual(false);
+            expect(whitelist.isAccessAllowed("http://www.cnn.com", true)).toEqual(false);
         });
     });
 
@@ -202,6 +219,20 @@ describe("whitelist", function () {
             expect(whitelist.isAccessAllowed("http://www.google.com/search?q=awesome")).toEqual(true);
             expect(whitelist.isAccessAllowed("http://www.google.com/search?a=anyLetter")).toEqual(true);
             expect(whitelist.isAccessAllowed("http://www.google.com/blah?q=awesome")).toEqual(false);
+        });
+
+        it("can deny access for query strings without a query string wildcard", function () {
+            var whitelist = new Whitelist({
+                hasMultiAccess : false,
+                accessList : [{
+                    uri : "http://www.google.com/search",
+                    allowSubDomain : true,
+                    features : null
+                }]
+            });
+
+            expect(whitelist.isAccessAllowed("http://www.google.com/search?q=awesome", true)).toEqual(false);
+            expect(whitelist.isAccessAllowed("http://www.google.com/search?a=anyLetter", true)).toEqual(false);
         });
 
         it("can allow access for ports given just the whitelist url", function () {
@@ -626,6 +657,20 @@ describe("whitelist", function () {
                 });
 
                 expect(whitelist.isAccessAllowed("file://store/home/user/documents/file.doc")).toEqual(true);
+            });
+
+            it("can deny access to a different folder of a whitelisted file URL", function () {
+                var whitelist = new Whitelist({
+                    hasMultiAccess : false,
+                    accessList : [{
+                        uri : "http://store.com/home/user/documents",
+                        allowSubDomain : false,
+                        features : null
+                    }]
+                });
+
+                expect(whitelist.isAccessAllowed("http://store.com/home/user/documents/file.doc")).toEqual(true);
+                expect(whitelist.isAccessAllowed("http://store.com/file2.doc")).toEqual(false);
             });
 
             it("can allow access to RTSP protocol urls", function () {
