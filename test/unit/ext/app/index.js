@@ -19,6 +19,7 @@ var _apiDir = __dirname + "./../../../../ext/app/",
     eventExt = require(__dirname + "./../../../../ext/event/index"),
     index,
     mockedExit,
+    mockedIsForeground,    
     config;
 
 function testRegisterEvent(e) {
@@ -53,12 +54,14 @@ describe("app index", function () {
         config = require(_libDir + "config");
         index = require(_apiDir + "index");
         mockedExit = jasmine.createSpy("exit");
+        mockedIsForeground = jasmine.createSpy("isForeground");        
         GLOBAL.window = GLOBAL;
         GLOBAL.window.qnx = {
             webplatform: {
                 getApplication: function () {
                     return {
-                        exit: mockedExit
+                        exit: mockedExit,
+                        isForeground: mockedIsForeground
                     };
                 }
             }
@@ -69,6 +72,7 @@ describe("app index", function () {
         config = null;
         index = null;
         mockedExit = null;
+        mockedIsForeground = null;
     });
 
     describe("author", function () {
@@ -159,6 +163,14 @@ describe("app index", function () {
         });
     });
 
+    describe("isForeground", function () {
+        it("can call success with isForeground", function () {
+            var success = jasmine.createSpy();
+            index.isForeground(success, null, null, null);
+            expect(success).toHaveBeenCalledWith(mockedIsForeground);
+        });
+    });    
+    
     describe("events", function () {
         beforeEach(function () {
             spyOn(events, "add");

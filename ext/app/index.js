@@ -127,6 +127,10 @@ module.exports = {
         success(_config.version);
     },
 
+    isForeground: function (success, fail, args, env) {
+        success(window.qnx.webplatform.getApplication().isForeground);
+    },
+    
     exit: function () {
         window.qnx.webplatform.getApplication().exit();
     }

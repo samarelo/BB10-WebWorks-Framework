@@ -123,4 +123,13 @@ describe("app client", function () {
             expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "exit");
         });
     });
+    
+    describe("isForeground", function () {
+        it("should call execSync", function () {
+            mockedWebworks.execSync = jasmine.createSpy();
+            GLOBAL.window.webworks = mockedWebworks;
+            client.isForeground();
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "isForeground");
+        });
+    });     
 });

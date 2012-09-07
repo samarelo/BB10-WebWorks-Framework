@@ -107,5 +107,9 @@ describe("blackberry.app", function () {
     it('blackberry.app.version should be read-only', function () {
         testAppReadOnly("version");
     });
+    
+    it('blackberry.isForeground should exist', function () {
+        expect(blackberry.app.isForeground).toBeDefined();
+    });
 
 });

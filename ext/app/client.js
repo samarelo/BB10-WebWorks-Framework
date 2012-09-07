@@ -20,9 +20,28 @@ _self.exit = function () {
     return window.webworks.execSync(ID, "exit");
 };
 
+function getFieldValue(field) {
+    var value = null;
+
+    try {
+        value = window.webworks.execSync(ID, field, null);
+    } catch (e) {
+        console.error(e);
+    }
+
+    return value;
+}
+
+function defineGetter(field) {
+    Object.defineProperty(_self, field, {
+        get: function () {
+            return getFieldValue(field);
+        }
+    });
+}
+
 function defineReadOnlyField(field) {
-    var value = window.webworks.execSync(ID, field, null);
-    Object.defineProperty(_self, field, {"value": value, "writable": false});
+    Object.defineProperty(_self, field, {"value": getFieldValue(field), "writable": false});
 }
 
 defineReadOnlyField("author");
@@ -44,6 +63,8 @@ defineReadOnlyField("licenseURL");
 defineReadOnlyField("name");
 
 defineReadOnlyField("version");
+
+defineGetter("isForeground");
 
 window.webworks.execSync(ID, "registerEvents", null);
 
