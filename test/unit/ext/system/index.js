@@ -79,10 +79,12 @@ describe("system index", function () {
 
         it("responds to 'batterycritical' events", function () {
             var eventName = "batterycritical",
-                args = {eventName : encodeURIComponent(eventName)};
+                args = {eventName : encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
+
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
-            eventExt.add(null, null, args);
+            eventExt.add(null, null, args, env);
             expect(events.add).toHaveBeenCalled();
             expect(events.add.mostRecentCall.args[0].event.eventName).toEqual(eventName);
             expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
@@ -90,19 +92,23 @@ describe("system index", function () {
 
         it("removes 'batterycritical' events", function () {
             var eventName = "batterycritical",
-                args = {eventName : encodeURIComponent(eventName)};
+                args = {eventName : encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
+
             spyOn(events, "remove");
-            eventExt.remove(null, null, args);
+            eventExt.remove(null, null, args, env);
             expect(events.remove).toHaveBeenCalled();
             expect(events.remove.mostRecentCall.args[0].event.eventName).toEqual(eventName);
         });
 
         it("responds to 'batterylow' events", function () {
             var eventName = "batterylow",
-                args = {eventName : encodeURIComponent(eventName)};
+                args = {eventName : encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
+
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
-            eventExt.add(null, null, args);
+            eventExt.add(null, null, args, env);
             expect(events.add).toHaveBeenCalled();
             expect(events.add.mostRecentCall.args[0].event.eventName).toEqual(eventName);
             expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
@@ -110,20 +116,23 @@ describe("system index", function () {
 
         it("removes 'batterylow' events", function () {
             var eventName = "batterylow",
-                args = {eventName : encodeURIComponent(eventName)};
+                args = {eventName : encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
+
             spyOn(events, "remove");
-            eventExt.remove(null, null, args);
+            eventExt.remove(null, null, args, env);
             expect(events.remove).toHaveBeenCalled();
             expect(events.remove.mostRecentCall.args[0].event.eventName).toEqual(eventName);
         });
 
         it("responds to 'batterystatus' events", function () {
             var eventName = "batterystatus",
-                args = {eventName: encodeURIComponent(eventName)};
+                args = {eventName: encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
 
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
-            eventExt.add(successCB, failCB, args);
+            eventExt.add(successCB, failCB, args, env);
             expect(events.add).toHaveBeenCalled();
             expect(events.add.mostRecentCall.args[0].event.eventName).toEqual(eventName);
             expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
@@ -133,10 +142,11 @@ describe("system index", function () {
 
         it("removes 'batterystatus' events", function () {
             var eventName = "batterystatus",
-                args = {eventName: encodeURIComponent(eventName)};
+                args = {eventName: encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
 
             spyOn(events, "remove");
-            eventExt.remove(successCB, failCB, args);
+            eventExt.remove(successCB, failCB, args, env);
             expect(events.remove).toHaveBeenCalled();
             expect(events.remove.mostRecentCall.args[0].event.eventName).toEqual(eventName);
             expect(successCB).toHaveBeenCalled();
@@ -145,11 +155,12 @@ describe("system index", function () {
 
         it("invokes success callback when battery event name with not defined", function () {
             var eventName = "batteryeventnotdefined",
-                args = {eventName: encodeURIComponent(eventName)};
+                args = {eventName: encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
 
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
-            eventExt.add(successCB, failCB, args);
+            eventExt.add(successCB, failCB, args, env);
             expect(events.add).toHaveBeenCalled();
             expect(successCB).toHaveBeenCalled();
             expect(failCB).not.toHaveBeenCalled();
@@ -157,10 +168,11 @@ describe("system index", function () {
 
         it("invokes success callback when tring to remove battery event with name not defined", function () {
             var eventName = "batteryeventnotdefined",
-                args = {eventName: encodeURIComponent(eventName)};
+                args = {eventName: encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
 
             spyOn(events, "remove");
-            eventExt.remove(successCB, failCB, args);
+            eventExt.remove(successCB, failCB, args, env);
             expect(events.remove).toHaveBeenCalled();
             expect(successCB).toHaveBeenCalled();
             expect(failCB).not.toHaveBeenCalled();
@@ -168,14 +180,15 @@ describe("system index", function () {
 
         it("invokes fail callback when exception occured", function () {
             var eventName = "batteryeventnotdefined",
-                args = {eventName: encodeURIComponent(eventName)};
+                args = {eventName: encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
 
             spyOn(events, "add").andCallFake(function () {
                 throw "";
             });
 
             sysIndex.registerEvents(jasmine.createSpy());
-            eventExt.add(successCB, failCB, args);
+            eventExt.add(successCB, failCB, args, env);
             expect(events.add).toHaveBeenCalled();
             expect(successCB).not.toHaveBeenCalled();
             expect(failCB).toHaveBeenCalledWith(-1, jasmine.any(String));
@@ -183,12 +196,13 @@ describe("system index", function () {
 
         it("invokes fail callback when exception occured", function () {
             var eventName = "batteryeventnotdefined",
-                args = {eventName: encodeURIComponent(eventName)};
+                args = {eventName: encodeURIComponent(eventName)},
+                env = {webviewId: (new Date()).getTime()};
 
             spyOn(events, "remove").andCallFake(function () {
                 throw "";
             });
-            eventExt.remove(successCB, failCB, args);
+            eventExt.remove(successCB, failCB, args, env);
             expect(events.remove).toHaveBeenCalled();
             expect(successCB).not.toHaveBeenCalled();
             expect(failCB).toHaveBeenCalledWith(-1, jasmine.any(String));
@@ -274,7 +288,7 @@ describe("system index", function () {
                 "softwareVersion" : "10.0.6.99",
                 "name": "Device"
             });
-        }); 
+        });
 
     });
 
@@ -404,10 +418,12 @@ describe("system index", function () {
 
         it("responds to 'languagechanged' events", function () {
             var eventName = "languagechanged",
-                args = {eventName : encodeURIComponent(eventName)};
+                args = {eventName : encodeURIComponent(eventName)},
+                webviewId = (new Date()).getTime();
+
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
-            eventExt.add(null, null, args);
+            eventExt.add(null, null, args, {webviewId: webviewId});
             expect(events.add).toHaveBeenCalled();
             expect(events.add.mostRecentCall.args[0].event.eventName).toEqual(eventName);
             expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
@@ -439,10 +455,12 @@ describe("system index", function () {
 
         it("responds to 'regionchanged' events", function () {
             var eventName = "regionchanged",
-                args = {eventName : encodeURIComponent(eventName)};
+                args = {eventName : encodeURIComponent(eventName)},
+                webviewId = (new Date()).getTime();
+
             spyOn(events, "add");
             sysIndex.registerEvents(jasmine.createSpy());
-            eventExt.add(null, null, args);
+            eventExt.add(null, null, args, {webviewId: webviewId});
             expect(events.add).toHaveBeenCalled();
             expect(events.add.mostRecentCall.args[0].event.eventName).toEqual(eventName);
             expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
@@ -519,11 +537,12 @@ describe("system index", function () {
 
             it("responds to 'fontchanged' events", function () {
                 var eventName = "fontchanged",
-                    args = {eventName : encodeURIComponent(eventName)};
+                    args = {eventName : encodeURIComponent(eventName)},
+                    webviewId = (new Date()).getTime();
 
                 spyOn(events, "add");
                 sysIndex.registerEvents(jasmine.createSpy());
-                eventExt.add(null, null, args);
+                eventExt.add(null, null, args, {webviewId: webviewId});
                 expect(events.add).toHaveBeenCalled();
                 expect(events.add.mostRecentCall.args[0].event).toEqual(eventName);
                 expect(events.add.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));
@@ -589,10 +608,10 @@ describe("system index", function () {
                         })
                     }
                 },
-                webkitRequestFileSystem: jasmine.createSpy().andCallFake(function (mode, size, onInitFs, errorHandler) {
+                webkitRequestFileSystem: jasmine.createSpy().andCallFake(function (mode, size, onInitFs) {
                     onInitFs({
                         root: {
-                            getFile: jasmine.createSpy().andCallFake(function (path, options, gotFile, errorHandler) {
+                            getFile: jasmine.createSpy().andCallFake(function (path, options, gotFile) {
                                 gotFile({
                                     file: jasmine.createSpy().andCallFake(function (cb) {
                                         cb();
@@ -607,7 +626,7 @@ describe("system index", function () {
             GLOBAL.FileReader = function () {
                 return {
                     onloadend: jasmine.createSpy(),
-                    readAsText: jasmine.createSpy().andCallFake(function (file) {
+                    readAsText: jasmine.createSpy().andCallFake(function () {
                         this.onloadend.apply({
                             result: "\"America/New_York\"\n\"America/Los_Angeles\""
                         });

@@ -16,7 +16,6 @@
 
 var _apiDir = __dirname + "./../../../../ext/invoke/",
     _libDir = __dirname + "./../../../../lib/",
-    _extDir = __dirname + "./../../../../ext/",
     mockedInvocation,
     index,
     successCB,
@@ -64,9 +63,10 @@ describe("invoke index", function () {
             var successCB = jasmine.createSpy(),
                 mockedArgs = {
                     "request": encodeURIComponent(JSON.stringify({target: "abc.xyz"}))
-                };
+                },
+                env = {webviewId: (new Date()).getTime()};
 
-            index.invoke(successCB, null, mockedArgs);
+            index.invoke(successCB, null, mockedArgs, env);
             expect(mockedInvocation.invoke).toHaveBeenCalledWith({
                 target: "abc.xyz"
             }, jasmine.any(Function));
@@ -77,9 +77,10 @@ describe("invoke index", function () {
             var successCB = jasmine.createSpy(),
                 mockedArgs = {
                     "request": encodeURIComponent(JSON.stringify({uri: "http://www.rim.com"}))
-                };
+                },
+                env = {webviewId: (new Date()).getTime()};
 
-            index.invoke(successCB, null, mockedArgs);
+            index.invoke(successCB, null, mockedArgs, env);
             expect(mockedInvocation.invoke).toHaveBeenCalledWith({
                 uri: "http://www.rim.com"
             }, jasmine.any(Function));
@@ -89,10 +90,11 @@ describe("invoke index", function () {
         it("can invoke with uri using the file_transfer_mode property", function () {
             var successCB = jasmine.createSpy(),
                 mockedArgs = {
-                    "request": encodeURIComponent(JSON.stringify({uri: "http://www.rim.com", file_transfer_mode: "PRESERVE"})),
-                };
+                    "request": encodeURIComponent(JSON.stringify({uri: "http://www.rim.com", file_transfer_mode: "PRESERVE"}))
+                },
+                env = {webviewId: (new Date()).getTime()};
 
-            index.invoke(successCB, null, mockedArgs);
+            index.invoke(successCB, null, mockedArgs, env);
             expect(mockedInvocation.invoke).toHaveBeenCalledWith({
                 uri: "http://www.rim.com",
                 file_transfer_mode : "PRESERVE"
@@ -293,14 +295,15 @@ describe("invoke index", function () {
 
             it("can register for events", function () {
                 var evts = ["onChildCardStartPeek", "onChildCardEndPeek", "onChildCardClosed"],
-                    args;
+                    args,
+                    env = {webviewId: (new Date()).getTime()};
 
                 spyOn(events, "add");
 
                 evts.forEach(function (e) {
                     args = {eventName : encodeURIComponent(e)};
                     index.registerEvents(successCB);
-                    eventExt.add(null, null, args);
+                    eventExt.add(null, null, args, env);
                     expect(successCB).toHaveBeenCalled();
                     expect(events.add).toHaveBeenCalled();
                     expect(events.add.mostRecentCall.args[0].event).toEqual(e);
@@ -310,26 +313,28 @@ describe("invoke index", function () {
 
             it("call successCB when all went well", function () {
                 var eventName = "onChildCardClosed",
-                    args = {eventName: encodeURIComponent(eventName)};
+                    args = {eventName: encodeURIComponent(eventName)},
+                    env = {webviewId: (new Date()).getTime()};
 
                 spyOn(events, "add");
                 index.registerEvents(jasmine.createSpy(), jasmine.createSpy());
-                eventExt.add(successCB, failCB, args);
+                eventExt.add(successCB, failCB, args, env);
                 expect(events.add).toHaveBeenCalled();
                 expect(successCB).toHaveBeenCalled();
                 expect(failCB).not.toHaveBeenCalled();
             });
 
             it("call errorCB when there was an error", function () {
-                var eventName = "onChildCardClosed",
-                    args = {eventName: encodeURIComponent(eventName)};
+                var eventName = "onChildCardClosed999999",
+                    args = {eventName: encodeURIComponent(eventName)},
+                    env = {webviewId: (new Date()).getTime()};
 
                 spyOn(events, "add").andCallFake(function () {
                     throw "";
                 });
 
                 index.registerEvents(jasmine.createSpy(), jasmine.createSpy());
-                eventExt.add(successCB, failCB, args);
+                eventExt.add(successCB, failCB, args, env);
                 expect(events.add).toHaveBeenCalled();
                 expect(successCB).not.toHaveBeenCalled();
                 expect(failCB).toHaveBeenCalledWith(-1, jasmine.any(String));

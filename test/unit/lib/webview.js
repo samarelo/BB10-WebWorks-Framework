@@ -1,11 +1,11 @@
 describe("webview", function () {
     var libPath = "./../../../",
-        request = require(libPath + "lib/request"),
         utils = require(libPath + "lib/utils"),
         webview,
         mockedController,
         mockedWebview,
-        mockedApplication;
+        mockedApplication,
+        mockedInvocation;
 
     beforeEach(function () {
         webview = require(libPath + "lib/webview");
@@ -34,6 +34,7 @@ describe("webview", function () {
             notifyApplicationOrientationDone: jasmine.createSpy(),
             onContextMenuRequestEvent: undefined,
             onNetworkResourceRequested: undefined,
+            onUnknownProtocol: undefined,
             destroy: jasmine.createSpy(),
             executeJavaScript: jasmine.createSpy(),
             windowGroup: undefined,
@@ -47,7 +48,11 @@ describe("webview", function () {
             getBackgroundColor: jasmine.createSpy(),
             allowWebEvent: jasmine.createSpy()
         };
+        mockedInvocation = {
+            invoke: jasmine.createSpy("invoke")
+        };
         mockedApplication = {
+            invocation: mockedInvocation
         };
         GLOBAL.qnx = {
             callExtensionMethod: jasmine.createSpy(),
@@ -66,9 +71,7 @@ describe("webview", function () {
                     }
                     return mockedWebview;
                 },
-                getApplication: function () {
-                    return mockedApplication;
-                }
+                getApplication: jasmine.createSpy().andReturn(mockedApplication)
             }
         };
         GLOBAL.window = {
@@ -82,7 +85,6 @@ describe("webview", function () {
 
     describe("create", function () {
         it("sets up the visible webview", function () {
-            spyOn(request, "init").andCallThrough();
             webview.create();
             waits(1);
             runs(function () {
@@ -90,8 +92,8 @@ describe("webview", function () {
                 expect(mockedWebview.active).toEqual(true);
                 expect(mockedWebview.zOrder).toEqual(0);
                 expect(mockedWebview.setGeometry).toHaveBeenCalledWith(0, 0, screen.width, screen.height);
-                expect(request.init).toHaveBeenCalledWith(mockedWebview);
-                expect(mockedWebview.onNetworkResourceRequested).toEqual(request.init(mockedWebview).networkResourceRequestedHandler);
+                expect(mockedWebview.onNetworkResourceRequested).toEqual(jasmine.any(Function));
+                expect(mockedWebview.onUnknownProtocol).toEqual(jasmine.any(Function));
 
                 //The default config.xml only has access to WIDGET_LOCAL
                 //and has permission for two apis
@@ -201,6 +203,23 @@ describe("webview", function () {
             webview.create();
             webview.continueSSLHandshaking(streamId, SSLAction);
             expect(mockedWebview.continueSSLHandshaking).toHaveBeenCalledWith(streamId, SSLAction);
+        });
+    });
+
+    describe("unknown protocol handler", function () {
+        it("prevents default for unknownProtocol", function () {
+            webview.create();
+            waits(1);
+            runs(function () {
+                var returnValue = mockedWebview.onUnknownProtocol(JSON.stringify({
+                    url : "tel:647-123-1234"
+                }));
+                expect(JSON.parse(returnValue).setPreventDefault).toEqual(true);
+                expect(mockedInvocation.invoke).toHaveBeenCalledWith({
+                    action: 'bb.action.OPEN',
+                    uri: "tel:647-123-1234"
+                }, jasmine.any(Function));
+            });
         });
     });
 
