@@ -63,6 +63,7 @@ describe("connection index", function () {
             it("can register the 'connectionchange' event", function () {
                 var eventName = "connectionchange",
                     args = {eventName : encodeURIComponent(eventName)},
+                    env = {webviewId: (new Date()).getTime()},
                     success = jasmine.createSpy(),
                     utils = require(_libDir + "utils");
 
@@ -72,7 +73,7 @@ describe("connection index", function () {
 
                 spyOn(events, "add");
                 index.registerEvents(success);
-                eventExt.add(null, null, args);
+                eventExt.add(null, null, args, env);
                 expect(success).toHaveBeenCalled();
                 expect(events.add).toHaveBeenCalled();
                 expect(events.add.mostRecentCall.args[0].event).toEqual(eventName);
@@ -81,10 +82,11 @@ describe("connection index", function () {
 
             it("can un-register the 'connectionchange' event", function () {
                 var eventName = "connectionchange",
+                    env = {webviewId: (new Date()).getTime()},
                     args = {eventName : encodeURIComponent(eventName)};
 
                 spyOn(events, "remove");
-                eventExt.remove(null, null, args);
+                eventExt.remove(null, null, args, env);
                 expect(events.remove).toHaveBeenCalled();
                 expect(events.remove.mostRecentCall.args[0].event).toEqual(eventName);
                 expect(events.remove.mostRecentCall.args[0].trigger).toEqual(jasmine.any(Function));

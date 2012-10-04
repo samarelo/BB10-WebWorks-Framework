@@ -24,6 +24,7 @@ var _apiDir = __dirname + "./../../../../ext/app/",
 function testRegisterEvent(e) {
     var args = {eventName : encodeURIComponent(e)},
         success = jasmine.createSpy(),
+        env = {webviewId: (new Date()).getTime()},
         utils = require(_libDir + "utils");
 
     spyOn(utils, "loadExtensionModule").andCallFake(function () {
@@ -31,7 +32,7 @@ function testRegisterEvent(e) {
     });
 
     index.registerEvents(success);
-    eventExt.add(null, null, args);
+    eventExt.add(null, null, args, env);
     expect(success).toHaveBeenCalled();
     expect(events.add).toHaveBeenCalled();
     expect(events.add.mostRecentCall.args[0].event).toEqual(e);
