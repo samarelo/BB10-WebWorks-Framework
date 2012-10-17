@@ -23,6 +23,13 @@ var _apiDir = __dirname + "./../../../../ext/notification/",
 
 describe("notification index", function () {
     beforeEach(function () {
+        mockedPPS = {
+            write : jasmine.createSpy("PPS 'write' method"),
+            open: jasmine.createSpy("PPS 'open' Method"),
+            onNewData: jasmine.createSpy("PPS 'onNewData' Method"),
+            onOpenFailed: jasmine.createSpy("PPS 'onOpenFailed' Method"),
+            onWriteFailed: jasmine.createSpy("PPS 'onWriteFailed' Method")
+        };
         GLOBAL.window = GLOBAL;
         GLOBAL.window.qnx = {
             webplatform: {
@@ -73,13 +80,31 @@ describe("notification index", function () {
             expect(typeof index.remove).toEqual("function");
         });
 
+        it("Should have 'close' method defined", function () {
+            expect(index.close).toBeDefined();
+            expect(typeof index.close).toEqual("function");
+        });
+
         describe("notify method", function () {
+            var config;
+
+            beforeEach(function () {
+                config = require(_libDir + "config");
+            });
+
             afterEach(function () {
                 expect(notification.remove).toHaveBeenCalledWith(args.options);
                 delete require.cache[require.resolve(_libDir + "config")];
+                config = null;
             });
 
             it("Should invoke notification notify method when making a call with required parameters", function () {
+                var args = {
+                    id : 100,
+                    title : JSON.stringify(encodeURIComponent("TheTitle")),
+                    options: JSON.stringify({tag: encodeURIComponent("TheTag")})
+                };
+
                 index.notify(successCB, failCB, args);
                 expect(notification.notify).toHaveBeenCalledWith(args, jasmine.any(Function));
                 expect(failCB).not.toHaveBeenCalled();
@@ -87,11 +112,16 @@ describe("notification index", function () {
             });
 
             it("Should invoke notification notify method when making a call with all parameters", function () {
+                var args = {
+                    id : 100,
+                    title : JSON.stringify(encodeURIComponent("TheTitle")),
                 args.options = JSON.stringify({tag: encodeURIComponent("TheTag"), 'body': encodeURIComponent("TheSubtitle"), 'target': encodeURIComponent("The.Target"), 'targetAction': encodeURIComponent("The.Target.Action"),
                       'payload': encodeURIComponent("Payload"), 'payloadType': encodeURIComponent("PayloadType"), 'payloadURI': encodeURIComponent("http://www.payload.uri")});
+                };
 
                 index.notify(successCB, failCB, args);
                 expect(notification.notify).toHaveBeenCalledWith(args, jasmine.any(Function));
+                'target': args.options.target, 'targetAction': args.options.targetAction, 'payload': args.options.payload, 'payloadType': args.options.payloadType, 'payloadURI': args.options.payloadURI}});
                 expect(failCB).not.toHaveBeenCalled();
                 expect(successCB).toHaveBeenCalled();
             });
@@ -99,7 +129,10 @@ describe("notification index", function () {
             it("Should invoke notification notify with default targetAction if target is provided but no targetAction wasn't", function () {
                 var defaultTargetAction = "bb.action.OPEN";
 
+                        title : JSON.stringify(encodeURIComponent("TheTitle")),
                 args.options = JSON.stringify({tag: encodeURIComponent("TheTag"), 'target': encodeURIComponent("The.Target")});
+                    },
+                    defaultTargetAction = "bb.action.OPEN";
 
                 index.notify(successCB, failCB, args);
                 expect(notification.notify).toHaveBeenCalledWith(args, jasmine.any(Function));
@@ -109,7 +142,11 @@ describe("notification index", function () {
             });
 
             it("Should invoke notificatoin notify with no default targetAction if target is an empty string", function () {
+                var args = {
+                        id : 100,
+                        title : JSON.stringify(encodeURIComponent("TheTitle")),
                 args.options = JSON.stringify({tag: encodeURIComponent("TheTag"), 'target': ""});
+                    };
 
                 index.notify(successCB, failCB, args);
                 expect(notification.notify).toHaveBeenCalledWith(args, jasmine.any(Function));
@@ -121,6 +158,12 @@ describe("notification index", function () {
             });
 
             it("Should invoke notification notify with no default targetAction if target is not provided", function () {
+                var args = {
+                        id : 100,
+                        title : JSON.stringify(encodeURIComponent("TheTitle")),
+                        options: JSON.stringify({tag: encodeURIComponent("TheTag")})
+                    };
+
                 index.notify(successCB, failCB, args);
                 expect(notification.notify).toHaveBeenCalledWith(args, jasmine.any(Function));
                 expect(args.options.target).not.toBeDefined();
@@ -132,6 +175,7 @@ describe("notification index", function () {
             it("Should set target from first occurrence of applicaiton type target in config and pass it to notify method", function () {
                 var viewerTarget = "bb.notification.target.viewer",
                     appTargetFirst = "bb.notification.target.app.first",
+                        title : JSON.stringify(encodeURIComponent("TheTitle")),
                     appTargetSecond = "bb.notification.target.app.second",
                     defaultTargetAction = "bb.action.OPEN",
                     config = require(_libDir + "config");
@@ -157,8 +201,15 @@ describe("notification index", function () {
                 expect(failCB).not.toHaveBeenCalled();
                 expect(successCB).toHaveBeenCalled();
             });
+        });
 
             it("Should not set target and targetAction if not provided and no in config", function () {
+            var args = {
+                id : 100,
+                title : JSON.stringify(encodeURIComponent("TheTitle")),
+                options: JSON.stringify({tag: encodeURIComponent("TheTag")})
+            };
+
                 index.notify(successCB, failCB, args);
                 expect(notification.notify).toHaveBeenCalledWith(args, jasmine.any(Function));
                 expect(args.options.target).not.toBeDefined();
@@ -169,12 +220,29 @@ describe("notification index", function () {
         });
         describe("remove method", function () {
             it("Should call notification remove method when remove is called.", function () {
+            var args = {
+                id : 100,
                 args.tag = JSON.stringify(encodeURIComponent("TheTag"));
+            };
+
                 index.remove(successCB, failCB, args);
+
                 expect(notification.remove).toHaveBeenCalledWith(args.tag);
                 expect(failCB).not.toHaveBeenCalled();
                 expect(successCB).toHaveBeenCalled();
             });
+
+        it("Should invoke write for delete method of pps when calling notification close", function () {
+            var args = {
+                id : 100,
+                tag : JSON.stringify(encodeURIComponent("TheTag"))
+            };
+
+            index.close(successCB, failCB, args);
+
+            expect(mockedPPS.write).toHaveBeenCalledWith({'msg': 'delete', 'id': args.id, dat: {'itemid': args.tag}});
+            expect(failCB).not.toHaveBeenCalled();
+            expect(successCB).toHaveBeenCalled();
         });
     });
 });

@@ -138,5 +138,41 @@ describe("default plugin", function () {
 
             expect(fail).toHaveBeenCalledWith(-1, jasmine.any(String), 404);
         });
+
+        it("calls a multi-level method of the extension", function () {
+            var env = {"request": req, "response": res};
+
+            spyOn(Whitelist.prototype, "isFeatureAllowed").andReturn(true);
+            spyOn(testExtension, "author");
+            testExtension.author.a = {
+                b : {
+                    c : jasmine.createSpy()
+                }
+            };
+
+            req.params.ext = "blackberry.app";
+            req.params.method = "author/a/b/c";
+
+            defaultPlugin.exec(req, succ, fail, args, env);
+
+            expect(fail).wasNotCalled();
+            expect(testExtension.author.a.b.c).toHaveBeenCalledWith(succ, fail, args, env);
+        });
+
+        it("throws a 404 is a multi-level method is not found", function () {
+            var env = {"request": req, "response": res};
+
+            spyOn(Whitelist.prototype, "isFeatureAllowed").andReturn(true);
+            spyOn(testExtension, "author");
+            testExtension.author.a = {
+            };
+
+            req.params.ext = "blackberry.app";
+            req.params.method = "author/a/b/c";
+
+            defaultPlugin.exec(req, succ, fail, args, env);
+
+            expect(fail).toHaveBeenCalledWith(-1, jasmine.any(String), 404);
+        });
     });
 });

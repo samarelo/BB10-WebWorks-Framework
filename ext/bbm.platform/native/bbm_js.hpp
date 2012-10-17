@@ -39,6 +39,7 @@ private:
     std::string m_id;
     pthread_t m_thread;
     webworks::BBMBPS* m_pBBMController;
+    std::string m_id;
 };
 
 #endif // BBM_JS_HPP_
