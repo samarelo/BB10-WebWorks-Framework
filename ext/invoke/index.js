@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
+// invoke part
+var LIB_FOLDER = "../../lib/",
+    _overlayWebView;
+
 var _event = require("../../lib/event"),
     _actionMap = {
         onChildCardStartPeek: {
@@ -48,6 +54,14 @@ module.exports = {
             };
 
         window.qnx.webplatform.getApplication().invocation.invoke(request, callback);
+        success();
+    },
+
+    invokeTarget: function (success, fail, args) {
+        var request = JSON.parse(decodeURIComponent(args["request"]));
+
+        // This may need to do some type of CARD/APPLICATION checking?
+        _overlayWebView.showInvocationlist(request);
         success();
     },
 
@@ -103,6 +117,7 @@ module.exports = {
             var utils = require("./../../lib/utils"),
                 eventExt = utils.loadExtensionModule("event", "index");
 
+
             eventExt.registerEvents(_actionMap);
             success();
         } catch (e) {
@@ -112,3 +127,7 @@ module.exports = {
 
 };
 
+// this is added for invoke
+qnx.webplatform.getController().addEventListener('ui.init', function () {
+    _overlayWebView = require(LIB_FOLDER + 'overlayWebView');
+});
