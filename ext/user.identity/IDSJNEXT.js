@@ -37,15 +37,9 @@ JNEXT.IDS = function ()
 	self.idsSetOption = function (args) {
         var setOptionsOpts = { "option" : JSON.parse(decodeURIComponent(args.option)),
                             "value" : JSON.parse(decodeURIComponent(args.value)) };
-		
-	
+
 		if (typeof(setOptionsOpts.option) === "string") {
 			setOptionsOpts.option = parseInt(setOptionsOpts.option, 10);
-		}
-
-
-		if (typeof(setOptionsOpts.value) === "object") {
-			setOptionsOpts.value = "";
 		}
 
 		return JNEXT.invoke(self.m_id, "setOption " + JSON.stringify(setOptionsOpts));
@@ -87,21 +81,23 @@ JNEXT.IDS = function ()
     };
 
 	self.onEvent = function (strData) {
+	
 		var arData = strData.split(" "),
 			strEventDesc = arData[0],
 			strEventData = arData[1];
 
 		strEventDesc = strEventDesc.replace(/["']{1}/gi, "");
-
+	alert("on event: |" + strEventDesc + "|");
+	alert("on event: " + strEventData);
 		_event.trigger(strEventDesc, strEventData);
 	};
 	
 	self.init = function () {
-        if (!JNEXT.require("idsext")) {
+        if (!JNEXT.require("libidsext")) {
             return false;
         }
 
-        self.m_id = JNEXT.createObject("idsext.IDSEXT");
+        self.m_id = JNEXT.createObject("libidsext.IDSEXT");
 
         if (self.m_id === "") {
 			return false;

@@ -35,19 +35,17 @@ extern "C" {
 		
 			resultJSON["requestId"] = requestId;
 			resultJSON["token"] = token;
+
 			resultJSON["paramCount"] = paramCount;
 			Json::Value tokenParams;
-		
 			int i;
 			for(i = 0; i < paramCount; i++) {
 				tokenParams[i]["name"] = params[i].name;
 				tokenParams[i]["value"] = params[i].value;
 			}
-
 			resultJSON["tokenParams"] = Json::Value(tokenParams);
 
 			std::string resultStr = writer.write(resultJSON);
-
 			request->NotifyEvent(request->getEventId(), writer.write(resultJSON));
 		}
 	}
@@ -95,6 +93,7 @@ extern "C" {
 
 
 	void failureCB(ids_request_id_t requestId, ids_result_t result, const char *failureInfo, void *cbData) {
+fprintf(stderr, "IDSEXT - failureCB\n");
 		if( cbData ) {
 			IDSEXT *request = (IDSEXT *) cbData;
 
@@ -162,31 +161,24 @@ ids_provider_mapping* IDSEXT::getProvider(const std::string& provider)
 	return NULL;
 }
 
-std::string IDSEXT::getErrorDescription()
+void IDSEXT::clearProviders(void)
 {
-	std::string errorString;
-	switch(errno)
-	{
-		case EINVAL:  // invalid
-			errorString = "Invalid Input";
-			break;
-		case EEXIST: // exists already
-			errorString = "Invalid Input";
-			break;
-		case ECOMM:  // communication error
-		case ENOMEM: // nomemory
-		case EIO: // io error
-		default:
-			errorString = "BBID Internal Error";
-			break;
+	ids_provider_mapping *current = providers;
+	
+	while( current != NULL ) {
+		providers = current->next;
+		if( current->providerName ) free( (char *) current->providerName );
+		if( current->provider ) free( (void *) current->provider );
+		if( current->next ) free( (void *) current->next );
+		current = providers;
 	}
-	return errorString;
 }
 
 std::string IDSEXT::InvokeMethod(const std::string& command)
 {
-	ostringstream cmdIn;
-
+//	ostringstream cmdIn;
+//	cmdIn << "IDSEXT - command received: " << command;
+//	fprintf(stderr, "%s\n", cmdIn.str().c_str());
     int index = command.find_first_of(" ");
 
     string strCommand = command.substr(0, index);
@@ -204,39 +196,35 @@ std::string IDSEXT::InvokeMethod(const std::string& command)
         bool parse = reader.parse(strParam, obj);
 
         if (!parse) {
-            fprintf(stderr, "%s\n", "error parsing\n");
+            //fprintf(stderr, "%s\n", "error parsing\n");
             return "unable to parse options";
         }
-		int option = -1;
-		std::string value = "";
 
-		if( obj["option"] != Json::nullValue ) {
-        	option = obj["option"].asInt();			
-		}
-
-       	value = obj["value"].asString();
+        int option = obj["option"].asInt();
+        const std::string value = obj["value"].asString();
 
 		return( SetOption(option, value) );
 	} else if (strCommand == "getToken") {
+
         // parse the JSON
         bool parse = reader.parse(strParam, obj);
 
         if (!parse) {
-            fprintf(stderr, "%s", "error parsing\n");
+            //fprintf(stderr, "%s", "error parsing\n");
             return "unable to parse options";
         }
 		event_id = obj["_eventId"].asString();
 		std::string provider = obj["provider"].asString();
         std::string tokenType = obj["tokenType"].asString();
         const std::string appliesTo = obj["appliesTo"].asString();
-
 		GetToken(provider, tokenType, appliesTo);
+fprintf(stderr, "IDSEXT - called getToken()\n");
 	} else if (strCommand == "clearToken") {
 	        // parse the JSON
         bool parse = reader.parse(strParam, obj);
 
         if (!parse) {
-            fprintf(stderr, "%s", "error parsing\n");
+            //fprintf(stderr, "%s", "error parsing\n");
             return "unable to parse options";
         }
 		event_id = obj["_eventId"].asString();
@@ -249,7 +237,7 @@ std::string IDSEXT::InvokeMethod(const std::string& command)
         // parse the JSON
         bool parse = reader.parse(strParam, obj);
         if (!parse) {
-            fprintf(stderr, "%s", "error parsing\n");
+            //fprintf(stderr, "%s", "error parsing\n");
             return "unable to parse options";
         }
 		event_id = obj["_eventId"].asString();
@@ -274,6 +262,7 @@ void IDSEXT::NotifyEvent(const std::string& eventId, const std::string& event)
     eventString.append(eventId);
     eventString.append(" ");
     eventString.append(event);
+    fprintf(stderr, "IDSEXT - sending plugin event (%s)\n", eventString.c_str());
     SendPluginEvent(eventString.c_str(), m_pContext);
 }
 
@@ -288,7 +277,7 @@ std::string IDSEXT::RegisterProvider(const std::string& providerName)
 {
 	Json::FastWriter writer;
 	Json::Value resultJSON;
-	fprintf(stderr, "idsext - registering provider - in func\n");
+	
 	ids_provider_mapping *registeredItem = (ids_provider_mapping *) malloc( sizeof( ids_provider_mapping ) );
 	
 	registeredItem->providerName = strdup(providerName.c_str());
@@ -296,27 +285,29 @@ std::string IDSEXT::RegisterProvider(const std::string& providerName)
 	if( (ids_result_t) resultJSON["result"].asInt() == IDS_SUCCESS ) {
 		registeredItem->next = providers;
 		providers = registeredItem;
+		fprintf(stderr, "IDSEXT - register - we have another fd and it is (%i)\n", registeredItem->providerFd);	
 		FD_SET( registeredItem->providerFd, &tRfd );
 		numFds++;
+		fprintf(stderr, "IDSEXT - adding a registered item to the list (%s)\n", registeredItem->providerName);
 	} else {
-		resultJSON["errorDescription"] = getErrorDescription();
+			fprintf(stderr, "IDSEXT - not adding a registered item to the list\n");
 	}
+	resultJSON["errno"] = errno;
 
 	std::string resultStr = writer.write(resultJSON);
 
+	
 	return( resultStr.c_str() );
 }
 
 std::string IDSEXT::SetOption(int option, const std::string& value)
 {
+fprintf(stderr, "IDSEXT - setting options = in set option\n");
 	Json::FastWriter writer;
 	Json::Value resultJSON;
 
 	resultJSON["result"] = ids_set_option( (ids_option_t) option, value.c_str() );
-
-	if( (ids_result_t) resultJSON["result"].asInt() != IDS_SUCCESS ) {
-		resultJSON["errorDescription"] = getErrorDescription();
-	}
+	resultJSON["errno"] = errno;
 
 	std::string resultStr = writer.write(resultJSON);
 
@@ -325,41 +316,63 @@ std::string IDSEXT::SetOption(int option, const std::string& value)
 
 void* IDSEXT::idsEventThread(void *args)
 {
-	IDSEXT *eventIdsExt = (IDSEXT *) args;
+struct timeval tv;
+fprintf(stderr, "IDSEXT - EVENT THREAD RUNNING\n");
+	IDSEXT *myidsext = (IDSEXT *) args;
 
-	FD_ZERO((fd_set *) &eventIdsExt->tRfd);
-	FD_SET( eventIdsExt->getFd(), &eventIdsExt->tRfd );
+	FD_ZERO((fd_set *) &myidsext->tRfd);
+	FD_SET( myidsext->getFd(), &myidsext->tRfd );
+	
+	if( myidsext->providers != NULL ) {
+		fprintf(stderr, "IDSEXT - adding an fd to the fdset\n");
+		FD_SET( myidsext->providers->providerFd, &myidsext->tRfd );
+	}
+	
 	int selectRes = 0;
 	ids_provider_mapping* current;
 	while(1) {
-		selectRes = select( eventIdsExt->numFds, (fd_set *)&eventIdsExt->tRfd, 0, 0, NULL );
-
-		current = eventIdsExt->providers;
-		while( current != NULL ) {
-			if( selectRes > 0 && FD_ISSET( current->providerFd, (fd_set *) &eventIdsExt->tRfd)) {
-				ids_process_msg( current->providerFd );
-				current = NULL;
-			}		
-		}
+	fprintf(stderr, "IDSEXT - in while\n");
+		tv.tv_sec = 5;
+		tv.tv_usec = 0;		
+//		 selectRes = select( myidsext->numFds, (fd_set *)&myidsext->tRfd, 0, 0, NULL );
+		 selectRes = select( myidsext->numFds, (fd_set *)&myidsext->tRfd, 0, 0, &tv );
+	fprintf(stderr, "IDSEXT - after select (%i)\n", selectRes);
+		current = myidsext->providers;
+		if( current != NULL ) ids_process_msg( current->providerFd );
+//		while( current != NULL ) {
+//			if( selectRes > 0 && FD_ISSET( current->providerFd, (fd_set *) &myidsext->tRfd)) {
+//				fprintf(stderr, "IDSEXT - processing message\n");
+//				ids_process_msg( current->providerFd );
+//				current = NULL;
+//			} else {
+//				current = current->next;
+//				fprintf(stderr, "IDSEXT - not using this provider\n");
+//			}	
+//		}
+//		fprintf(stderr, "IDSEXT = after while loop in event thread\n");
 	}
+fprintf(stderr, "IDSEXT - EVENT THREAD FINISHED\n");
+	return NULL;
 }
 
 
 std::string IDSEXT::GetToken(const std::string& provider, const std::string& tokenType, const std::string& appliesTo)
 {
-	ids_request_id_t *getTokenRequestId;
+fprintf(stderr, "IDSEXT - in getToken\n");
+	ids_request_id_t *getTokenRequestId = NULL;
 	ids_provider_mapping *requestProvider = getProvider( provider );
 
-	ids_result_t getTokenResult = IDS_FAILURE;
+	ids_result_t getTokenResult;
 	if( requestProvider ) {
 		getTokenResult = ids_get_token( requestProvider->provider, tokenType.c_str(), appliesTo.c_str(), getTokenSuccessCB, failureCB, this, getTokenRequestId);
-		if( getTokenResult != IDS_SUCCESS ) {
-			failureCB( (ids_request_id_t)0, getTokenResult, NULL, this );
-		}
 	} else {
-		failureCB( (ids_request_id_t)0, getTokenResult, "No registered providers", this );
+		getTokenResult = ids_get_token( NULL, tokenType.c_str(), appliesTo.c_str(), getTokenSuccessCB, failureCB, this, getTokenRequestId);
 	}
 
+	if( getTokenResult != IDS_SUCCESS ) {
+		failureCB( (ids_request_id_t)0, IDS_FAILURE, NULL, this );
+	}
+fprintf(stderr, "IDSEXT - in getToken - returning quotes\n");	
 	return "";
 }
 
@@ -374,18 +387,18 @@ std::string IDSEXT::GetProperties(const std::string& provider, int numProps, con
          propList[i] = strdup( token );
          i++;
     }
-	ids_request_id_t *getPropertiesRequestId;
+	ids_request_id_t *getPropertiesRequestId = NULL;
 	ids_provider_mapping *requestProvider = getProvider( provider );
-
-	ids_result_t getPropertiesResult = IDS_FAILURE;
+	ids_result_t getPropertiesResult;
 	if( requestProvider ) {
 		getPropertiesResult = ids_get_properties( requestProvider->provider, 0, numProps, (const char **) propList, getPropertiesSuccessCB, failureCB, this, getPropertiesRequestId);
-		if( getPropertiesResult != IDS_SUCCESS ) {
-			failureCB( (ids_request_id_t)0, getPropertiesResult, NULL, this );
-		}
 	} else {
-		failureCB( (ids_request_id_t)0, getPropertiesResult, "No registered providers", this );
+		getPropertiesResult = ids_get_properties( NULL, 0, numProps, (const char **) propList, getPropertiesSuccessCB, failureCB, this, getPropertiesRequestId);
 	}
+	if( getPropertiesResult != IDS_SUCCESS ) {
+		failureCB( (ids_request_id_t)0, IDS_FAILURE, NULL, this );
+	}
+
 
 	return "";
 
@@ -393,17 +406,18 @@ std::string IDSEXT::GetProperties(const std::string& provider, int numProps, con
 
 std::string IDSEXT::ClearToken(const std::string& provider, const std::string& tokenType, const std::string& appliesTo)
 {
-	ids_request_id_t *clearTokenRequestId;
+	ids_request_id_t *clearTokenRequestId = NULL;
 	ids_provider_mapping *requestProvider = getProvider( provider );
 
-	ids_result_t clearTokenResult = IDS_FAILURE;
+	ids_result_t clearTokenResult;
 	if( requestProvider ) {
 		clearTokenResult = ids_clear_token( requestProvider->provider, tokenType.c_str(), appliesTo.c_str(), clearTokenSuccessCB, failureCB, this, clearTokenRequestId);
-		if( clearTokenResult != IDS_SUCCESS ) {
-			failureCB( (ids_request_id_t)0, clearTokenResult, NULL, this );
-		}
 	} else {
-		failureCB( (ids_request_id_t)0, clearTokenResult, "No registered providers", this );
+		clearTokenResult = ids_clear_token( NULL, tokenType.c_str(), appliesTo.c_str(), clearTokenSuccessCB, failureCB, this, clearTokenRequestId);
+	}
+
+	if( clearTokenResult != IDS_SUCCESS ) {
+		failureCB( (ids_request_id_t)0, IDS_FAILURE, NULL, this );
 	}
 
 	return "";

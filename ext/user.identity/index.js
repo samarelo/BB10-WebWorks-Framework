@@ -44,4 +44,3 @@ module.exports = {
 		success(ids.idsGetProperties(args));
 	}
 };
-

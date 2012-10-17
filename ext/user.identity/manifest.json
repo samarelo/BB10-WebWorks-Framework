@@ -1,5 +1,5 @@
 {
     "global": false,
     "namespace": "blackberry.user.identity",
-    "dependencies": []
+    "dependencies": ["json"]
 }

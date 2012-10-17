@@ -41,13 +41,22 @@ _self.setOption = function (option, value) {
 };
 
 
-
 function createEventHandler(_eventId, callback) {
     if (!window.webworks.event.isOn(_eventId)) {
 		window.webworks.event.once(_ID, _eventId, callback);
 	}
 }
 
+function getTokenCallback(args) {
+	alert("Get token callback");
+//	var resultJSON = JSON.parse(args);
+
+//	if (resultJSON.result) {
+//		failureCallback(resultJSON);
+//	} else {
+//		successCallback(resultJSON);
+//	}
+}
 
 _self.getToken = function (idsProvider, tokenType, appliesTo, successCallback, failureCallback) {
 	var _eventId = "bbidGetTokenEventId",
@@ -57,20 +66,20 @@ _self.getToken = function (idsProvider, tokenType, appliesTo, successCallback, f
 			"tokenType": tokenType,
 			"appliesTo": appliesTo || {}
         };
+	createEventHandler(_eventId, getTokenCallback);
+//	createEventHandler(_eventId, function (args) {
+//		var resultJSON = JSON.parse(args);
 
-	createEventHandler(_eventId, function (args) {
-		var resultJSON = JSON.parse(args);
-
-		if (resultJSON.result) {
-			failureCallback(resultJSON);
-		} else {
-			successCallback(resultJSON);
-		}
-	});
-
+//		if (resultJSON.result) {
+//			failureCallback(resultJSON);
+//		} else {
+//			successCallback(resultJSON);
+//		}
+//	});
 
 	window.webworks.execAsync(_ID, "getToken", args);
 };
+
 
 _self.clearToken = function (idsProvider, tokenType, appliesTo, successCallback, failureCallback) {
 	var _eventId = "bbidClearTokenEventId",
@@ -104,7 +113,7 @@ _self.getProperties = function (idsProvider, userProperties, successCallback, fa
 
 	createEventHandler(_eventId, function (args) {
 		var resultJSON = JSON.parse(args);
-
+alert("got token");
 		if (resultJSON.result) {
 			failureCallback(resultJSON);
 		} else {

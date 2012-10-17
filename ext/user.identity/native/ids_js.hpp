@@ -35,7 +35,6 @@ extern "C" {
 	void getPropertiesSuccessCB( ids_request_id_t requestId, int propertyCount, const ids_property_t* properties, void* cb_data );
 	void clearTokenSuccessCB( ids_request_id_t requestId, bool clear, void* cb_data );
 	void failureCB(ids_request_id_t requestId, ids_result_t result, const char *failureInfo, void *cbData);
-	static int my_process_msg( int fd, int aint, void *cbData );
 
 }
 
@@ -43,7 +42,7 @@ class IDSEXT : public JSExt
 {
 public:
     explicit IDSEXT(const std::string& id);
-    virtual ~IDSEXT() { ids_shutdown(); pthread_join(m_thread, NULL); m_thread = 0; }
+    virtual ~IDSEXT() { ids_shutdown(); pthread_join(m_thread, NULL); m_thread = 0; clearProviders(); }
     virtual std::string InvokeMethod(const std::string& command);
     virtual bool CanDelete();
     void NotifyEvent(const std::string& eventId, const std::string& event);
@@ -61,18 +60,18 @@ public:
 	std::string getEventId();
 	int getFd();
 
-
+	ids_provider_mapping *providers;
 private:
     pthread_t m_thread;
 	int ids_fd;
 	int numFds;
 	fd_set tRfd;
-	ids_provider_mapping *providers;
+//	ids_provider_mapping *providers;
     std::string m_id;
     std::string event_id;
     
     ids_provider_mapping* getProvider(const std::string& provider);
-    std::string getErrorDescription();
+    void clearProviders(void);
 };
 
 #endif // IDS_JS_HPP_
