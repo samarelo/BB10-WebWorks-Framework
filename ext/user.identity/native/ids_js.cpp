@@ -93,7 +93,6 @@ extern "C" {
 
 
 	void failureCB(ids_request_id_t requestId, ids_result_t result, const char *failureInfo, void *cbData) {
-fprintf(stderr, "IDSEXT - failureCB\n");
 		if( cbData ) {
 			IDSEXT *request = (IDSEXT *) cbData;
 
@@ -113,8 +112,10 @@ fprintf(stderr, "IDSEXT - failureCB\n");
 
 IDSEXT::IDSEXT(const std::string& id) : m_id(id)
 {
-	ids_fd = ids_initialize();
-	numFds = 1;
+	if( ids_initialize() != IDS_SUCCESS ) {
+		fprintf(stderr, "Unable to initialize IDS library\n");
+	}
+	maxFds = -1;
 	providers = NULL;
 	
 	pthread_create(&m_thread, NULL, idsEventThread, this );
@@ -124,9 +125,10 @@ std::string IDSEXT::getEventId()
 {
 	return event_id;
 }
-int IDSEXT::getFd()
+
+ids_provider_mapping* IDSEXT::getProviders()
 {
-	return ids_fd;
+	return providers;
 }
 
 char* onGetObjList()
@@ -176,9 +178,6 @@ void IDSEXT::clearProviders(void)
 
 std::string IDSEXT::InvokeMethod(const std::string& command)
 {
-//	ostringstream cmdIn;
-//	cmdIn << "IDSEXT - command received: " << command;
-//	fprintf(stderr, "%s\n", cmdIn.str().c_str());
     int index = command.find_first_of(" ");
 
     string strCommand = command.substr(0, index);
@@ -217,8 +216,8 @@ std::string IDSEXT::InvokeMethod(const std::string& command)
 		std::string provider = obj["provider"].asString();
         std::string tokenType = obj["tokenType"].asString();
         const std::string appliesTo = obj["appliesTo"].asString();
+
 		GetToken(provider, tokenType, appliesTo);
-fprintf(stderr, "IDSEXT - called getToken()\n");
 	} else if (strCommand == "clearToken") {
 	        // parse the JSON
         bool parse = reader.parse(strParam, obj);
@@ -244,6 +243,7 @@ fprintf(stderr, "IDSEXT - called getToken()\n");
 		std::string provider = obj["provider"].asString();
         int numProps = obj["numProps"].asInt();
         const std::string userProps = obj["userProperties"].asString();
+
 		GetProperties(provider, numProps, userProps.c_str());
 	}
 
@@ -262,7 +262,6 @@ void IDSEXT::NotifyEvent(const std::string& eventId, const std::string& event)
     eventString.append(eventId);
     eventString.append(" ");
     eventString.append(event);
-    fprintf(stderr, "IDSEXT - sending plugin event (%s)\n", eventString.c_str());
     SendPluginEvent(eventString.c_str(), m_pContext);
 }
 
@@ -278,31 +277,33 @@ std::string IDSEXT::RegisterProvider(const std::string& providerName)
 	Json::FastWriter writer;
 	Json::Value resultJSON;
 	
+	
 	ids_provider_mapping *registeredItem = (ids_provider_mapping *) malloc( sizeof( ids_provider_mapping ) );
+	if( !registeredItem ) {
+		fprintf(stderr, "Unable to register IDS provider - malloc error\n");
+		return "";
+	}
 	
 	registeredItem->providerName = strdup(providerName.c_str());
 	resultJSON["result"] = ids_register_provider( registeredItem->providerName, &registeredItem->provider, &registeredItem->providerFd );
 	if( (ids_result_t) resultJSON["result"].asInt() == IDS_SUCCESS ) {
 		registeredItem->next = providers;
 		providers = registeredItem;
-		fprintf(stderr, "IDSEXT - register - we have another fd and it is (%i)\n", registeredItem->providerFd);	
+		write( fileIds[1], "New provider registered\n", 24);
 		FD_SET( registeredItem->providerFd, &tRfd );
-		numFds++;
-		fprintf(stderr, "IDSEXT - adding a registered item to the list (%s)\n", registeredItem->providerName);
-	} else {
-			fprintf(stderr, "IDSEXT - not adding a registered item to the list\n");
+
+		if( registeredItem->providerFd > maxFds ) maxFds = registeredItem->providerFd;
 	}
+
 	resultJSON["errno"] = errno;
 
 	std::string resultStr = writer.write(resultJSON);
 
-	
 	return( resultStr.c_str() );
 }
 
 std::string IDSEXT::SetOption(int option, const std::string& value)
 {
-fprintf(stderr, "IDSEXT - setting options = in set option\n");
 	Json::FastWriter writer;
 	Json::Value resultJSON;
 
@@ -316,49 +317,34 @@ fprintf(stderr, "IDSEXT - setting options = in set option\n");
 
 void* IDSEXT::idsEventThread(void *args)
 {
-struct timeval tv;
-fprintf(stderr, "IDSEXT - EVENT THREAD RUNNING\n");
 	IDSEXT *myidsext = (IDSEXT *) args;
 
+	pipe(myidsext->fileIds);
+	if( myidsext->maxFds < myidsext->fileIds[0] ) myidsext->maxFds = myidsext->fileIds[0];
+
 	FD_ZERO((fd_set *) &myidsext->tRfd);
-	FD_SET( myidsext->getFd(), &myidsext->tRfd );
+	FD_SET( myidsext->fileIds[0], &myidsext->tRfd );
 	
-	if( myidsext->providers != NULL ) {
-		fprintf(stderr, "IDSEXT - adding an fd to the fdset\n");
-		FD_SET( myidsext->providers->providerFd, &myidsext->tRfd );
-	}
-	
-	int selectRes = 0;
 	ids_provider_mapping* current;
+	int selectRes = 0;
 	while(1) {
-	fprintf(stderr, "IDSEXT - in while\n");
-		tv.tv_sec = 5;
-		tv.tv_usec = 0;		
-//		 selectRes = select( myidsext->numFds, (fd_set *)&myidsext->tRfd, 0, 0, NULL );
-		 selectRes = select( myidsext->numFds, (fd_set *)&myidsext->tRfd, 0, 0, &tv );
-	fprintf(stderr, "IDSEXT - after select (%i)\n", selectRes);
-		current = myidsext->providers;
-		if( current != NULL ) ids_process_msg( current->providerFd );
-//		while( current != NULL ) {
-//			if( selectRes > 0 && FD_ISSET( current->providerFd, (fd_set *) &myidsext->tRfd)) {
-//				fprintf(stderr, "IDSEXT - processing message\n");
-//				ids_process_msg( current->providerFd );
-//				current = NULL;
-//			} else {
-//				current = current->next;
-//				fprintf(stderr, "IDSEXT - not using this provider\n");
-//			}	
-//		}
-//		fprintf(stderr, "IDSEXT = after while loop in event thread\n");
+		selectRes = select( myidsext->maxFds + 1, (fd_set *)&myidsext->tRfd, 0, 0, NULL );
+
+		if( selectRes > 0 ) {
+			current = myidsext->providers;
+			while( current != NULL ) {
+				ids_process_msg( current->providerFd );
+				current = current->next;			
+			}
+		}
 	}
-fprintf(stderr, "IDSEXT - EVENT THREAD FINISHED\n");
+
 	return NULL;
 }
 
 
 std::string IDSEXT::GetToken(const std::string& provider, const std::string& tokenType, const std::string& appliesTo)
 {
-fprintf(stderr, "IDSEXT - in getToken\n");
 	ids_request_id_t *getTokenRequestId = NULL;
 	ids_provider_mapping *requestProvider = getProvider( provider );
 
@@ -372,7 +358,7 @@ fprintf(stderr, "IDSEXT - in getToken\n");
 	if( getTokenResult != IDS_SUCCESS ) {
 		failureCB( (ids_request_id_t)0, IDS_FAILURE, NULL, this );
 	}
-fprintf(stderr, "IDSEXT - in getToken - returning quotes\n");	
+
 	return "";
 }
 

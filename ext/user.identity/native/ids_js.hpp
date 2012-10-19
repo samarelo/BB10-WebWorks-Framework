@@ -58,15 +58,13 @@ public:
 
 	// Needed for callbacks which are not included in IDSEXT class
 	std::string getEventId();
-	int getFd();
-
-	ids_provider_mapping *providers;
+	ids_provider_mapping *getProviders();
 private:
     pthread_t m_thread;
-	int ids_fd;
-	int numFds;
+	int maxFds;
 	fd_set tRfd;
-//	ids_provider_mapping *providers;
+	int fileIds[2];
+	ids_provider_mapping *providers;
     std::string m_id;
     std::string event_id;
     

@@ -87,8 +87,7 @@ JNEXT.IDS = function ()
 			strEventData = arData[1];
 
 		strEventDesc = strEventDesc.replace(/["']{1}/gi, "");
-	alert("on event: |" + strEventDesc + "|");
-	alert("on event: " + strEventData);
+
 		_event.trigger(strEventDesc, strEventData);
 	};
 	

@@ -15,7 +15,38 @@
  */
  
 var _self = {},
-    _ID = require("./manifest.json").namespace;
+    _ID = require("./manifest.json").namespace,
+    IDS_FAILURE = -1,  /*!< Indicates that a function did not complete
+                            successfully.  Often the application can get
+                            additional information by checking the value of
+                            @c errno. */
+    IDS_SUCCESS = 0,   /*!< Indicates that a function completed successfully.
+                            In asynchronous calls, the request has been sent
+                            and either the success or failure callback will be
+                            called when the response arrives. */
+
+    IDS_DEFAULT_ERROR = 49999, /*!< Default error.  Internal error occurred
+                                    while processing the request. */
+
+    // BlackBerry ID library basic error codes (reserved range : 50000 - 50099)
+    IDS_NAME_TOO_LONG = 50002,
+    IDS_ACCOUNT_LOCALLY_LOCKED_OUT = 50003,
+    IDS_USER_COULD_NOT_BE_AUTHENTICATED = 50004,
+    IDS_TOO_MANY_NAMES_PASSED = 50005,
+    IDS_INVALID_REQUEST = 50006,
+    IDS_PROPERTY_DOES_NOT_EXIST = 50007,
+    IDS_UNKNOWN_TOKEN_TYPE = 50008,
+    IDS_UNKNOWN_APPLIES_TO = 50009,
+    IDS_NOT_ENOUGH_RESOURCES = 50010,
+    IDS_CANNOT_GET_TOKEN_WHILE_OFFLINE = 50011,
+    IDS_ERROR_WHILE_CONTACTING_SERVICE = 50012,  /*!< Error while contacting
+                                                      identity service.  This
+                                                      could include network
+                                                      issues. */
+    IDS_NULL_OR_UNKNOWN_PARAMETERS = 50015,
+    IDS_CLEAR_TOKEN_FAIL = 50016,
+    IDS_PROPERTY_NOT_AUTHORIZED = 50017,
+    IDS_NAME_MUST_BE_SET = 50107;
 
 _self.self = {};
 
@@ -47,17 +78,6 @@ function createEventHandler(_eventId, callback) {
 	}
 }
 
-function getTokenCallback(args) {
-	alert("Get token callback");
-//	var resultJSON = JSON.parse(args);
-
-//	if (resultJSON.result) {
-//		failureCallback(resultJSON);
-//	} else {
-//		successCallback(resultJSON);
-//	}
-}
-
 _self.getToken = function (idsProvider, tokenType, appliesTo, successCallback, failureCallback) {
 	var _eventId = "bbidGetTokenEventId",
 		args = {
@@ -66,16 +86,16 @@ _self.getToken = function (idsProvider, tokenType, appliesTo, successCallback, f
 			"tokenType": tokenType,
 			"appliesTo": appliesTo || {}
         };
-	createEventHandler(_eventId, getTokenCallback);
-//	createEventHandler(_eventId, function (args) {
-//		var resultJSON = JSON.parse(args);
 
-//		if (resultJSON.result) {
-//			failureCallback(resultJSON);
-//		} else {
-//			successCallback(resultJSON);
-//		}
-//	});
+	createEventHandler(_eventId, function (args) {
+		var resultJSON = JSON.parse(args);
+	
+		if (resultJSON.result) {
+			failureCallback(resultJSON);
+		} else {
+			successCallback(resultJSON);
+		}
+	});
 
 	window.webworks.execAsync(_ID, "getToken", args);
 };
@@ -92,7 +112,7 @@ _self.clearToken = function (idsProvider, tokenType, appliesTo, successCallback,
 
 	createEventHandler(_eventId, function (args) {
 		var resultJSON = JSON.parse(args);
-
+	
 		if (resultJSON.result) {
 			failureCallback(resultJSON);
 		} else {
@@ -113,14 +133,13 @@ _self.getProperties = function (idsProvider, userProperties, successCallback, fa
 
 	createEventHandler(_eventId, function (args) {
 		var resultJSON = JSON.parse(args);
-alert("got token");
+	
 		if (resultJSON.result) {
 			failureCallback(resultJSON);
 		} else {
 			successCallback(resultJSON.userProperties);
 		}
 	});
-
 
 	window.webworks.execAsync(_ID, "getProperties", args);
 };
