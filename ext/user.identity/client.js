@@ -79,7 +79,7 @@ function createEventHandler(_eventId, callback) {
 }
 
 _self.getToken = function (idsProvider, tokenType, appliesTo, successCallback, failureCallback) {
-	var _eventId = "bbidGetTokenEventId",
+	var _eventId = "bbidGetTokenEventId" + tokenType + appliesTo,
 		args = {
 			"_eventId": _eventId,
 			"provider": idsProvider,
@@ -102,7 +102,7 @@ _self.getToken = function (idsProvider, tokenType, appliesTo, successCallback, f
 
 
 _self.clearToken = function (idsProvider, tokenType, appliesTo, successCallback, failureCallback) {
-	var _eventId = "bbidClearTokenEventId",
+	var _eventId = "bbidClearTokenEventId" + tokenType + appliesTo,
 		args = {
 			"_eventId": _eventId,
 			"provider": idsProvider,
@@ -124,7 +124,7 @@ _self.clearToken = function (idsProvider, tokenType, appliesTo, successCallback,
 };
 
 _self.getProperties = function (idsProvider, userProperties, successCallback, failureCallback) {
-	var _eventId = "bbidGetPropertiesEventId",
+	var _eventId = "bbidGetPropertiesEventId" + userProperties,
 		args = {
 			"_eventId": _eventId,
 			"provider": idsProvider,

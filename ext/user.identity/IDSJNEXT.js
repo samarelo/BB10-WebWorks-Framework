@@ -40,6 +40,12 @@ JNEXT.IDS = function ()
 
 		if (typeof(setOptionsOpts.option) === "string") {
 			setOptionsOpts.option = parseInt(setOptionsOpts.option, 10);
+		} else if (typeof(setOptionsOpts.option) !== "number") {
+			setOptionsOpts.option = -1;
+		}
+		
+		if (typeof(setOptionsOpts.value) !== "string") {
+			setOptionsOpts.value = "";
 		}
 
 		return JNEXT.invoke(self.m_id, "setOption " + JSON.stringify(setOptionsOpts));
@@ -51,6 +57,15 @@ JNEXT.IDS = function ()
 							"tokenType" : JSON.parse(decodeURIComponent(args.tokenType)),
 							"appliesTo" : JSON.parse(decodeURIComponent(args.appliesTo)) };
 
+		if (typeof(getTokenArgs.provider) !== "string") {
+			getTokenArgs.provider = "";
+		}
+		if (typeof(getTokenArgs.tokenType) !== "string") {
+			getTokenArgs.tokenType = "";
+		}
+		if (typeof(getTokenArgs.appliesTo) !== "string") {
+			getTokenArgs.appliesTo = "";
+		}
 		return JNEXT.invoke(self.m_id, "getToken " + JSON.stringify(getTokenArgs));
 	};
 
@@ -59,6 +74,16 @@ JNEXT.IDS = function ()
 							"provider" : JSON.parse(decodeURIComponent(args.provider)),
 							"tokenType" : JSON.parse(decodeURIComponent(args.tokenType)),
 							"appliesTo" : JSON.parse(decodeURIComponent(args.appliesTo)) };
+
+		if (typeof(clearTokenArgs.provider) !== "string") {
+			clearTokenArgs.provider = "";
+		}
+		if (typeof(clearTokenArgs.tokenType) !== "string") {
+			clearTokenArgs.tokenType = "";
+		}
+		if (typeof(clearTokenArgs.appliesTo) !== "string") {
+			clearTokenArgs.appliesTo = "";
+		}
 
 		return JNEXT.invoke(self.m_id, "clearToken " + JSON.stringify(clearTokenArgs));
 	};
@@ -70,9 +95,18 @@ JNEXT.IDS = function ()
 								"userProperties" : JSON.parse(decodeURIComponent(args.userProperties)) },
 			properties = getPropertiesArgs.userProperties;
 
-		properties = properties.split(",");
-		getPropertiesArgs.numProps = properties.length;
-		
+		if (typeof(getPropertiesArgs.provider) !== "string") {
+			getPropertiesArgs.provider = "";
+		}
+
+		if (typeof(properties) === "string") {
+			properties = properties.split(",");
+			getPropertiesArgs.numProps = properties.length;
+		} else {
+			properties = "";
+			getPropertiesArgs.userProperties = "";
+			getPropertiesArgs.numProps = 0;
+		}
 		return JNEXT.invoke(self.m_id, "getProperties " + JSON.stringify(getPropertiesArgs));
 	};
 

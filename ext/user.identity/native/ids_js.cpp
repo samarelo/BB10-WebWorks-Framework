@@ -243,7 +243,6 @@ std::string IDSEXT::InvokeMethod(const std::string& command)
 		std::string provider = obj["provider"].asString();
         int numProps = obj["numProps"].asInt();
         const std::string userProps = obj["userProperties"].asString();
-
 		GetProperties(provider, numProps, userProps.c_str());
 	}
 
@@ -289,7 +288,9 @@ std::string IDSEXT::RegisterProvider(const std::string& providerName)
 	if( (ids_result_t) resultJSON["result"].asInt() == IDS_SUCCESS ) {
 		registeredItem->next = providers;
 		providers = registeredItem;
-		write( fileIds[1], "New provider registered\n", 24);
+		
+		// Signal the select in our event thread to break to add a new provider
+		write( fileIds[1], "%i\n", registeredItem->providerFd);
 		FD_SET( registeredItem->providerFd, &tRfd );
 
 		if( registeredItem->providerFd > maxFds ) maxFds = registeredItem->providerFd;
@@ -327,16 +328,27 @@ void* IDSEXT::idsEventThread(void *args)
 	
 	ids_provider_mapping* current;
 	int selectRes = 0;
-	while(1) {
-		selectRes = select( myidsext->maxFds + 1, (fd_set *)&myidsext->tRfd, 0, 0, NULL );
 
-		if( selectRes > 0 ) {
-			current = myidsext->providers;
-			while( current != NULL ) {
-				ids_process_msg( current->providerFd );
-				current = current->next;			
+	char *pcBuff = NULL;
+	pcBuff = (char *) malloc( 12 * sizeof(char) );
+	if( pcBuff ) {
+		while(1) {
+			selectRes = select( myidsext->maxFds + 1, (fd_set *)&myidsext->tRfd, 0, 0, NULL );
+	
+			if(FD_ISSET( myidsext->fileIds[0], &myidsext->tRfd) > 0) {
+				// We've added another provider - nothing to do but clear the pipe
+				read(myidsext->fileIds[0], pcBuff, 64 * sizeof(char));
+			}
+	
+			if( selectRes > 0 ) {
+				current = myidsext->providers;
+				while( current != NULL ) {
+					ids_process_msg( current->providerFd );
+					current = current->next;			
+				}
 			}
 		}
+	if( pcBuff ) free( pcBuff );
 	}
 
 	return NULL;
@@ -376,6 +388,7 @@ std::string IDSEXT::GetProperties(const std::string& provider, int numProps, con
 	ids_request_id_t *getPropertiesRequestId = NULL;
 	ids_provider_mapping *requestProvider = getProvider( provider );
 	ids_result_t getPropertiesResult;
+
 	if( requestProvider ) {
 		getPropertiesResult = ids_get_properties( requestProvider->provider, 0, numProps, (const char **) propList, getPropertiesSuccessCB, failureCB, this, getPropertiesRequestId);
 	} else {
