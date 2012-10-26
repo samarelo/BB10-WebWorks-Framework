@@ -11,13 +11,19 @@
             function do_input_Test() {
                 document.location.href = "local:///manual/framework-split/cards.htm";
             }
+            function do_input_Test2() {
+                document.location.href = "local:///manual/framework-split/stringPattern.htm";
+            }
         </script>
 	</head>
 	<body>
         <input id="backButton" type="button" value="Back" onclick="document.location.href = 'local:///index.htm';" />
         <p> This WebWorks Smoke Test includes the following tests: </p>
+		<li> String Pattern matching </li>
 		<li> blackberry.invoke.card </li>
 		</ol>
+            <p>
+            <input id="Button18" type="button" value="String pattern matching" onclick="return do_input_Test2()" /></p>
             <p>
             <input id="Button17" type="button" value="blackberry.invoke.card" onclick="return do_input_Test()" /></p>
     </ol>
