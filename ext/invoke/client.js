@@ -19,58 +19,6 @@ var _self = {},
     _invokeEventId = "invoke.invokeEventId",
     _queryEventId = "invoke.queryEventId";
 
-
-
-
-_self.invokeTarget = function (request, onSuccess, onError) {
-    var data,
-        callback;
-
-    if (!request) {
-        if (onError && typeof onError === "function") {
-            onError("invalid invocation request");
-            return;
-        }
-    } else {
-        if (request["data"]) {
-            data = request["data"];
-
-            try {
-                request["data"] = window.btoa(data);
-            } catch (e) {
-                if (onError && typeof onError === "function") {
-                    onError(e);
-                    return;
-                }
-            }
-        }
-    }
-
-    callback = function (error) {
-        if (error) {
-            if (onError && typeof onError === "function") {
-                onError(error);
-            }
-        } else {
-            if (onSuccess && typeof onSuccess === "function") {
-                onSuccess();
-            }
-        }
-    };
-
-    if (!window.webworks.event.isOn(_invokeEventId)) {
-        window.webworks.event.once(_ID, _invokeEventId, callback);
-    }
-
-    return window.webworks.execAsync(_ID, "invokeTarget", {request: request});
-};
-
-
-
-
-
-
-
 _self.invoke = function (request, onSuccess, onError) {
     var data,
         callback;

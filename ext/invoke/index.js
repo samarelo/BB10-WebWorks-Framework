@@ -57,14 +57,6 @@ module.exports = {
         success();
     },
 
-    invokeTarget: function (success, fail, args) {
-        var request = JSON.parse(decodeURIComponent(args["request"]));
-
-        // This may need to do some type of CARD/APPLICATION checking?
-        _overlayWebView.showInvocationlist(request);
-        success();
-    },
-
     query: function (success, fail, args) {
         var request = JSON.parse(decodeURIComponent(args["request"])),
             callback = function (error, response) {

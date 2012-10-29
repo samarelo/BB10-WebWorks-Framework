@@ -65,6 +65,50 @@ _self.invokeFilePicker = function (options, done, cancel, invokeCallback) {
     return window.webworks.execAsync(_ID, "invokeFilePicker", {options: options || ""});
 };
 
+
+_self.invokeTargetPicker = function (request, onSuccess, onError) {
+    var data,
+        callback;
+
+    if (!request) {
+        if (onError && typeof onError === "function") {
+            onError("invalid invocation request");
+            return;
+        }
+    } else {
+        if (request["data"]) {
+            data = request["data"];
+
+            try {
+                request["data"] = window.btoa(data);
+            } catch (e) {
+                if (onError && typeof onError === "function") {
+                    onError(e);
+                    return;
+                }
+            }
+        }
+    }
+
+    callback = function (error) {
+        if (error) {
+            if (onError && typeof onError === "function") {
+                onError(error);
+            }
+        } else {
+            if (onSuccess && typeof onSuccess === "function") {
+                onSuccess();
+            }
+        }
+    };
+
+    if (!window.webworks.event.isOn(_invokeEventId)) {
+        window.webworks.event.once(_ID, _invokeEventId, callback);
+    }
+
+    return window.webworks.execAsync(_ID, "invokeTargetPicker", {request: request});
+};
+
 //CAMERA PROPERTIES
 window.webworks.defineReadOnlyField(_self, "CAMERA_MODE_PHOTO", 'photo');
 window.webworks.defineReadOnlyField(_self, "CAMERA_MODE_VIDEO", 'video');

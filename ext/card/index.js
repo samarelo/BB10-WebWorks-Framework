@@ -45,6 +45,11 @@ module.exports = {
 
         window.qnx.webplatform.getApplication().cards.filePicker.open(options, done, cancel, invokeCallback);
         success();
+    },
+
+    invokeTarget: function (success, fail, args) {
+        var request = JSON.parse(decodeURIComponent(args["request"]));
+        _overlayWebView.showInvocationlist(request, success, fail);
     }
 };
 
