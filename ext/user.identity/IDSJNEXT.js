@@ -44,10 +44,6 @@ JNEXT.IDS = function ()
 			setOptionsOpts.option = -1;
 		}
 		
-		if (typeof(setOptionsOpts.value) !== "string") {
-			setOptionsOpts.value = "";
-		}
-
 		return JNEXT.invoke(self.m_id, "setOption " + JSON.stringify(setOptionsOpts));
 	};
 

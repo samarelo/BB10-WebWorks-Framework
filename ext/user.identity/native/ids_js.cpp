@@ -294,9 +294,11 @@ std::string IDSEXT::RegisterProvider(const std::string& providerName)
 		FD_SET( registeredItem->providerFd, &tRfd );
 
 		if( registeredItem->providerFd > maxFds ) maxFds = registeredItem->providerFd;
+	} else {
+		resultJSON["errno"] = errno;
 	}
 
-	resultJSON["errno"] = errno;
+
 
 	std::string resultStr = writer.write(resultJSON);
 
@@ -307,9 +309,12 @@ std::string IDSEXT::SetOption(int option, const std::string& value)
 {
 	Json::FastWriter writer;
 	Json::Value resultJSON;
-
+fprintf(stderr, "IDSEXT - set option (%i) (%s)", option, value.c_str() );
 	resultJSON["result"] = ids_set_option( (ids_option_t) option, value.c_str() );
-	resultJSON["errno"] = errno;
+	if( (ids_result_t) resultJSON["result"].asInt() != IDS_SUCCESS ) {
+		resultJSON["errno"] = errno;
+	}
+
 
 	std::string resultStr = writer.write(resultJSON);
 
