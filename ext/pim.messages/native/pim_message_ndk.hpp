@@ -64,6 +64,8 @@ private:
     //Serialize PIM classes
     Json::Value accountToJson(Account account);
     Json::Value folderToJson(MessageFolder folder);
+    Json::Value attachmentsToJson(QList<Attachment> attachments);
+    Json::Value recipientsToJson(QList<MessageContact> recipients);
     Json::Value messageToJson(Message message);
     std::string keyToString(qint64 key);
 

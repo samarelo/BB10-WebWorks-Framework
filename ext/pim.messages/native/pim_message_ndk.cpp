@@ -78,8 +78,9 @@ namespace webworks {
 
         Message message =  messageService->message(accountId, messageId);
         fprintf(stderr, "after recovering message\n");
-        Json::Value messageJson;// = messageToJson(message);
+        Json::Value messageJson = messageToJson(message);
         messageJson["folder"] = Json::Value(messageService->folder(accountId, message.folderId()).name().toStdString());
+        messageJson["account"] = accountToJson(accountService->account(accountId));
         fprintf(stderr, "after writing folder property\n");
         return messageJson;
     }
@@ -208,6 +209,70 @@ namespace webworks {
 
         return folderJson;
     }
+
+    Json::Value PimMessageNdk::attachmentsToJson(QList<Attachment> attachments)
+    {
+        Json::Value attachmentsArray;
+        for (int i = 0; i < attachments.size(); i++)
+        {
+            Attachment attachment = attachments[i];
+            Json::Value attachmentJson;
+            attachmentJson["name"] = Json::Value(attachment.name().toStdString());
+            attachmentJson["mimeType"] = Json::Value(attachment.mimeType().toStdString());
+            attachmentJson["id"] = Json::Value(attachment.id());
+            attachmentsArray.append(attachmentJson);
+        }
+        return attachmentsArray;
+    }
+
+    Json::Value PimMessageNdk::recipientsToJson(QList<MessageContact> recipients)
+    {
+        Json::Value recipientsArray;
+        for (int i = 0; i < recipients.size(); i++)
+        {
+            MessageContact recipient = recipients[i];
+            Json::Value recipientJson;
+            recipientJson["displayName"] = Json::Value(recipient.displayableName().toStdString());
+            recipientJson["email"] = Json::Value(recipient.address().toStdString());
+            recipientJson["type"] = Json::Value(recipient.type());
+            recipientsArray.append(recipientJson);
+        }
+        return recipientsArray;
+    }
+
+    Json::Value PimMessageNdk::messageToJson(Message message)
+    {
+        Json::Value messageJson;
+
+        MessageBody mBody = message.body(MessageBody::PlainText);
+        MessageStatus::Types mStatus = message.status();
+        Json::Value jsonMsgStatus;
+
+        switch (mStatus) {
+            case (MessageStatus::Sent):
+                jsonMsgStatus = Json::Value("sent");
+                break;
+            case (MessageStatus::Draft):
+                jsonMsgStatus = Json::Value("draft");
+                break;
+            default:
+                jsonMsgStatus = Json::Value("recieved");
+        }
+
+        messageJson["id"] = Json::Value(message.id());
+        messageJson["addresses"] = recipientsToJson(message.recipients());
+        messageJson["attachments"] = attachmentsToJson(message.attachments());
+        messageJson["subject"] = Json::Value(message.subject().toStdString());
+        messageJson["bodyType"] = Json::Value(mBody.type());
+        messageJson["body"] = Json::Value(mBody.plainText().toStdString());
+        messageJson["priority"] = Json::Value(message.priority());
+        messageJson["flagged"] = Json::Value(message.followupFlag().isSet());
+        messageJson["read"] = Json::Value((message.status() == MessageStatus::Read) ? true : false);
+        messageJson["status"] = jsonMsgStatus;
+
+        return messageJson;
+    }
+
 
     std::string PimMessageNdk::keyToString(qint64 key)
     {
