@@ -70,6 +70,10 @@ _self.getMessage = function (account, id) {
 
     message = window.webworks.execSync(_ID, "getMessage", {'accountId': account.id, 'messageId': id});
 
+    if (!message) {
+        return null;
+    }
+
     return new Message(message);
 };
 

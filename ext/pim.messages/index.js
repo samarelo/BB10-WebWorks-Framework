@@ -16,7 +16,8 @@
 
 var pimMessage,
     _event = require("../../lib/event"),
-    MessageError = require("./MessageError");
+    MessageError = require("./MessageError"),
+    INVALID_ID = "-1";
 
 function getParsedArgs(args) {
     var parsedArgs = {},
@@ -60,7 +61,13 @@ module.exports = {
 
     //MessageService.getMessage
     getMessage: function (success, fail, args) {
-        success(pimMessage.getMessage(getParsedArgs(args)));
+        var message = pimMessage.getMessage(getParsedArgs(args));
+
+        if (!message || message.id === INVALID_ID) {
+            message = null;
+        }
+
+        success(message);
     },
 
     // Message.save
@@ -127,7 +134,7 @@ JNEXT.PimMessage = function ()
 
     self.dummyFunction = function () {
         JNEXT.invoke(self.m_id, "dummyFunction");
-    }
+    };
 
     self.getAccounts = function () {
         var value = JNEXT.invoke(self.m_id, "getAccounts");
