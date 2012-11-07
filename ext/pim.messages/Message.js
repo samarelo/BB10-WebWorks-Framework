@@ -24,43 +24,33 @@ var _ID = require("./manifest.json").namespace,
     MessageAttachment = require("./MessageAttachment"),
     MessageError = require("./MessageError");
 
-function setCallbackForOnce(eventId, onSuccess, onError) {
-    var callback = function (args) {
-        var result = JSON.parse(unescape(args.result));
-
-        if (result._success) {
-            if (onSuccess && typeof onSuccess === "function") {
-                onSuccess();
-            }
-        } else {
-            if (onError && typeof onError === "function") {
-                onError(new MessageError(result.errorCode));
-            }
-        }
-    };
-
+function setCallbackForOnce(eventId, callback) {
     if (!window.webworks.event.isOn(eventId)) {
         window.webworks.event.once(_ID, eventId, callback);
     }
 }
 
 Message = function (args) {
+    var isConfigurable;
+
     args = args || {};
-    Object.defineProperty(this, "id", { "value": args.id || "" });
-    Object.defineProperty(this, "hash", { "value": args.hash || ""});
+    args.status = args.status || MessageStatus["new"];
+    isConfigurable = (args.status ===  MessageStatus["new"] || args.status ===  MessageStatus["draft"] ? true : false);
+
+    Object.defineProperty(this, "id", { "value": args.id || "", 'configurable': (args.status ===  MessageStatus["new"] ? true : false) });
+    Object.defineProperty(this, "hash", { "value": args.hash || "", 'configurable': true });
     Object.defineProperty(this, "devicetimestamp", { "value": args.devicetimestamp || ""});
-    this.account = args.account || null;
-    this.folder = args.folder || "";
+    Object.defineProperty(this, "account", { "value": args.account || null });
+    Object.defineProperty(this, "folder", { "value": args.folder || "", 'configurable': isConfigurable });
+    Object.defineProperty(this, "status", { "value": args.status || MessageStatus["new"], 'configurable': isConfigurable });
     this.priority = args.priority || PriorityType.Normal;
     this.flagged = args.flagged || false;
-    this.status = args.status || MessageStatus["new"];
     this.read = args.read || false;
     this.addresses = args.addresses ? MessageAddress.getArrayOfObjectsFromArrayOfJSONs(args.addresses) : [];
     this.attachments = args.attachments ? MessageAttachment.getArrayOfObjectsFromArrayOfJSONs(args.attachments) : [];
     this.bodyType = args.bodyType || "";
     this.subject = args.subject || "";
     this.body = args.body || "";
-
 };
 
 Message.prototype.getJSON = function () {
@@ -83,25 +73,84 @@ Message.prototype.getJSON = function () {
 };
 
 Message.prototype.save = function (onSuccess, onError) {
-    var request = this.getJSON();
+    var request = this.getJSON(),
+        callback,
+        that = this;
 
-    if ((onSuccess && typeof onSuccess === "function") || (onError && typeof onError === "function")) {
-        request._eventId = _utils.guid();
-        setCallbackForOnce(request._eventId, onSuccess, onError);
-    }
+    request._eventId = _utils.guid();
+
+    callback = function (args) {
+        var result = JSON.parse(unescape(args.result)),
+            newSaved = (this.status ===  MessageStatus["new"] ? true : false),
+            draftSaved;
+
+        if (result._success) {
+            draftSaved = (result.status ===  MessageStatus["draft"] ? true : false);
+
+            if (newSaved) {
+                Object.defineProperty(that, "id", { "value": result.id, writable: false, 'configurable': false});
+            }
+            else if (draftSaved) {
+                Object.defineProperty(that, "status", { "value": result.status, writable: false, 'configurable': true});
+                Object.defineProperty(that, "folder", { "value": result.folder, writable: false, 'configurable': true });
+            }
+
+            Object.defineProperty(that, "hash", { "value": result.hash, writable: false, 'configurable': true});
+            that.addresses = MessageAddress.getArrayOfJSONsFromArrayOfObjects(result.addresses);
+            that.attachments = MessageAttachment.getArrayOfJSONsFromArrayOfObjects(result.attachments);
+
+            if (onSuccess && typeof onSuccess === "function") {
+                onSuccess();
+            }
+        } else {
+            if (onError && typeof onError === "function") {
+                onError(new MessageError(result.errorCode));
+            }
+        }
+    };
+
+    setCallbackForOnce(request._eventId, callback);
 
     window.webworks.execAsync(_ID, "saveMessage", request);
 };
 
 Message.prototype.send = function (onSuccess, onError) {
-    var request = this.getJSON();
+    var request = this.getJSON(),
+        callback,
+        newSent = (this.status ===  MessageStatus["new"] ? true : false),
+        that = this;
 
-    if ((onSuccess && typeof onSuccess === "function") || (onError && typeof onError === "function")) {
+    if (this.status ===  MessageStatus["new"] || this.status ===  MessageStatus["draft"]) {
         request._eventId = _utils.guid();
-        setCallbackForOnce(request._eventId, onSuccess, onError);
-    }
 
-    window.webworks.execAsync(_ID, "sendMessage", request);
+        callback = function (args) {
+            var result = JSON.parse(unescape(args.result));
+
+            if (result._success) {
+                // Save id if message sent has a 'new' status
+                if (newSent) {
+                    Object.defineProperty(that, "id", { "value": result.id, writable: false, 'configurable': false});
+                }
+                Object.defineProperty(that, "hash", { "value": result.hash, writable: false, 'configurable': true});
+                Object.defineProperty(that, "status", { "value": result.status, writable: false, 'configurable': false});
+                Object.defineProperty(that, "folder", { "value": result.folder, writable: false, 'configurable': false });
+                that.addresses = MessageAddress.getArrayOfJSONsFromArrayOfObjects(result.addresses);
+                that.attachments = MessageAttachment.getArrayOfJSONsFromArrayOfObjects(result.attachments);
+
+                if (onSuccess && typeof onSuccess === "function") {
+                    onSuccess();
+                }
+            } else {
+                if (onError && typeof onError === "function") {
+                    onError(new MessageError(result.errorCode));
+                }
+            }
+        };
+
+        setCallbackForOnce(request._eventId, callback);
+
+        window.webworks.execAsync(_ID, "sendMessage", request);
+    }
 };
 
 
@@ -126,13 +175,10 @@ Message.prototype.removeAttachment = function (index) {
 
 MessageStatus = function () {
 };
-Object.defineProperty(MessageStatus, "read", {"value": 0});
-Object.defineProperty(MessageStatus, "draft", {"value": 1});
-Object.defineProperty(MessageStatus, "field", {"value": 2});
-Object.defineProperty(MessageStatus, "sent", {"value": 3});
-Object.defineProperty(MessageStatus, "deffered", {"value": 4});
-Object.defineProperty(MessageStatus, "broadcast", {"value": 5});
-Object.defineProperty(MessageStatus, "new", {"value": 6});
+Object.defineProperty(MessageStatus, "draft", {"value": "draft"});
+Object.defineProperty(MessageStatus, "new", {"value": "new"});
+Object.defineProperty(MessageStatus, "received", {"value": "received"});
+Object.defineProperty(MessageStatus, "sent", {"value": "sent"});
 
 PriorityType = function () {
 };

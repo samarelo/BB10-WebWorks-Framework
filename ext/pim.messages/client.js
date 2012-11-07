@@ -68,7 +68,7 @@ _self.getMessage = function (account, id) {
         throw new MessageError(MessageError.INVALID_ARGUMENT_ERROR);
     }
 
-    message = window.webworks.execSync(_ID, "getMessage", {'accountId': account.id, 'messageId': id});
+    message = window.webworks.execSync(_ID, "getMessage", {'accountId': account.id, 'messageId': "" + id});
 
     if (!message) {
         return null;
