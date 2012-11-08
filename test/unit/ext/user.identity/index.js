@@ -123,7 +123,7 @@ describe("user.identity.index", function () {
 				provider: "myProvider",
 				tokenType: "myTokenType",
 				appliesTo: "myAppliesTo" || {}
-			}
+			};
 			
 		expect(index.clearToken).toBeDefined();
 		index.clearToken(successCallback, null, args, null);
@@ -144,7 +144,7 @@ describe("user.identity.index", function () {
 					provider: "myProvider",
 					numProps: 1,
 					userProperties: "prop1" || {}
-				}
+				};
 				
 			expect(index.getProperties).toBeDefined();
 			index.getProperties(successCallback, null, args, null);
@@ -163,7 +163,7 @@ describe("user.identity.index", function () {
 					provider: "myProvider",
 					numProps: 3,
 					userProperties: "prop1,prop2,prop3" || {}
-				}
+				};
 				
 			index.getProperties(successCallback, null, args, null);
 			expect(JNEXT.invoke).toHaveBeenCalledWith(jasmine.any(String), "getProperties " + JSON.stringify(result));

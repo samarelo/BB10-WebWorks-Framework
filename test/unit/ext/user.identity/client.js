@@ -64,8 +64,8 @@ describe("user.identity client", function () {
             expect(client.setOption).toBeDefined();
 			var result = null,
 				expectedResult = { SetOptionJSON : "SetOptionResult" };
-			mockedWebworks.execSync = jasmine.createSpy("webworks.execSync").andReturn(JSON.stringify(expectedResult))
-            result = client.setOption( option, value );
+			mockedWebworks.execSync = jasmine.createSpy("webworks.execSync").andReturn(JSON.stringify(expectedResult));
+            result = client.setOption(option, value);
             expect(window.webworks.execSync).toHaveBeenCalledWith(_ID, "setOption", args);
 			expect(result).toEqual(expectedResult);
         });
@@ -80,8 +80,8 @@ describe("user.identity client", function () {
             expect(client.registerProvider).toBeDefined();
 			var result = null,
 				expectedResult = { RegisterProviderJSON : "RegisterProviderResult" };
-			mockedWebworks.execSync = jasmine.createSpy("webworks.execSync").andReturn(JSON.stringify(expectedResult))
-            result = client.registerProvider( provider );
+			mockedWebworks.execSync = jasmine.createSpy("webworks.execSync").andReturn(JSON.stringify(expectedResult));
+            result = client.registerProvider(provider);
             expect(window.webworks.execSync).toHaveBeenCalledWith(_ID, "registerProvider", args);
 			expect(result).toEqual(expectedResult);
         });
@@ -99,7 +99,7 @@ describe("user.identity client", function () {
 			failureResult = {
 				"result": "yes"
 			};
-			
+
 		describe("getToken", function () {
 			var eventId = "bbidGetTokenEventId",
 			args = {
@@ -110,7 +110,7 @@ describe("user.identity client", function () {
 			};
 			it("should call execAsync for getToken with success callback", function () {
 				expect(client.getToken).toBeDefined();
-				client.getToken( idsProvider, tokenType, appliesTo, successCallback, failureCallback );
+				client.getToken(idsProvider, tokenType, appliesTo, successCallback, failureCallback);
 				mockedWebworks.event.once.argsForCall[0][2](JSON.stringify(successResult));
 				expect(mockedWebworks.event.isOn).toHaveBeenCalledWith(eventId);
 				expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, eventId, jasmine.any(Function));
@@ -120,7 +120,7 @@ describe("user.identity client", function () {
 			
 			it("should call execAsync for getToken with failure callback", function () {
 				expect(client.getToken).toBeDefined();
-				client.getToken( idsProvider, tokenType, appliesTo, successCallback, failureCallback );
+				client.getToken(idsProvider, tokenType, appliesTo, successCallback, failureCallback);
 				mockedWebworks.event.once.argsForCall[1][2](JSON.stringify(failureResult));
 				expect(mockedWebworks.event.isOn).toHaveBeenCalledWith(eventId);
 				expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, eventId, jasmine.any(Function));
@@ -139,7 +139,7 @@ describe("user.identity client", function () {
 			};
 			it("should call execAsync for clearToken with success callback", function () {
 				expect(client.clearToken).toBeDefined();
-				client.clearToken( idsProvider, tokenType, appliesTo, successCallback, failureCallback );
+				client.clearToken(idsProvider, tokenType, appliesTo, successCallback, failureCallback);
 				mockedWebworks.event.once.argsForCall[2][2](JSON.stringify(successResult));
 				expect(mockedWebworks.event.isOn).toHaveBeenCalledWith(eventId);
 				expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, eventId, jasmine.any(Function));
@@ -149,7 +149,7 @@ describe("user.identity client", function () {
 			
 			it("should call execAsync for clearToken with failure callback", function () {
 				expect(client.clearToken).toBeDefined();
-				client.clearToken( idsProvider, tokenType, appliesTo, successCallback, failureCallback );
+				client.clearToken(idsProvider, tokenType, appliesTo, successCallback, failureCallback);
 				mockedWebworks.event.once.argsForCall[3][2](JSON.stringify(failureResult));
 				expect(mockedWebworks.event.isOn).toHaveBeenCalledWith(eventId);
 				expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, eventId, jasmine.any(Function));
@@ -179,9 +179,9 @@ describe("user.identity client", function () {
 				"userProperties": "myProps"
 			};
 			
-			it("should call execAsync for getProperties with success callback", function () {
+		it("should call execAsync for getProperties with success callback", function () {
 				expect(client.getProperties).toBeDefined();
-				client.getProperties( idsProvider, userProperties, successCallback, failureCallback );
+				client.getProperties(idsProvider, userProperties, successCallback, failureCallback);
 				mockedWebworks.event.once.argsForCall[4][2](JSON.stringify(successResult));
 				expect(mockedWebworks.event.isOn).toHaveBeenCalledWith(eventId);
 				expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, eventId, jasmine.any(Function));
@@ -189,9 +189,9 @@ describe("user.identity client", function () {
 				expect(window.webworks.execAsync).toHaveBeenCalledWith(_ID, "getProperties", args);
 			});
 			
-			it("should call execAsync for getProperties with failure callback", function () {
+		it("should call execAsync for getProperties with failure callback", function () {
 				expect(client.getProperties).toBeDefined();
-				client.getProperties( idsProvider, userProperties, successCallback, failureCallback );
+				client.getProperties(idsProvider, userProperties, successCallback, failureCallback);
 				mockedWebworks.event.once.argsForCall[5][2](JSON.stringify(failureResult));
 				expect(mockedWebworks.event.isOn).toHaveBeenCalledWith(eventId);
 				expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, eventId, jasmine.any(Function));
