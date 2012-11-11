@@ -17,6 +17,7 @@ var _config = require("./../../lib/config"),
     _event = require("./../../lib/event"),
     _utils = require("./../../lib/utils"),
     _appEvents = require("./../../lib/events/applicationEvents"),
+    _orientation,
     _actionMap = {
         swipedown: {
             context: _appEvents,
@@ -142,6 +143,7 @@ function translateToDeviceOrientation(orientation, fail) {
 }
 
 function rotateTrigger(width, height, angle) {
+    _orientation = angleToOrientation(angle);
     _event.trigger("orientationchange", angleToOrientation(angle));
 }
 
@@ -185,7 +187,7 @@ module.exports = {
     lockOrientation : function (success, fail, args, env) {
         var orientation = JSON.parse(decodeURIComponent(args.orientation)),
             rotateTo = translateToDeviceOrientation(orientation);
-      
+
         // Force rotate to the given orientation then lock it
         qnx.webplatform.getApplication().rotate(rotateTo);
         qnx.webplatform.getApplication().lockRotation(true);
@@ -204,8 +206,8 @@ module.exports = {
     },
 
     currentOrientation : function (success, fail, args, env) {
-        var angle = window.orientation;
-        success(angleToOrientation(angle));
+        var orientation = _orientation || angleToOrientation(window.orientation);
+        success(orientation);
     },
 
     exit: function () {

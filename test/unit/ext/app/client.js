@@ -48,7 +48,7 @@ afterEach(function () {
 
 describe("app client", function () {
     it("execSync should have been called once for all app fields", function () {
-        expect(mockedWebworks.execSync.callCount).toEqual(3); // +1 to account for the call to execSync for events
+        expect(mockedWebworks.execSync.callCount).toEqual(2); // +1 to account for the call to execSync for events
     });
 
     describe("author", function () {
@@ -95,7 +95,7 @@ describe("app client", function () {
 
     describe("licenseURL", function () {
         it("should be populated", function () {
-            expect(client.licenseURL === mockData.licenseURL); 
+            expect(client.licenseURL === mockData.licenseURL);
         });
     });
 
@@ -110,7 +110,7 @@ describe("app client", function () {
             expect(client.version === mockData.version);
         });
     });
-    
+
     describe("exit", function () {
         it("should call execSync", function () {
             mockedWebworks.execSync = jasmine.createSpy();

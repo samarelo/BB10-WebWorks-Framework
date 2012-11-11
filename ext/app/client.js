@@ -30,6 +30,18 @@ function defineReadOnlyField(field) {
     Object.defineProperty(_self, field, {"value": value, "writable": false});
 }
 
+Object.defineProperty(_self, "orientation", {
+    get: function () {
+        var orientation;
+        try {
+            orientation = window.webworks.execSync(ID, "currentOrientation");
+        } catch (e) {
+            console.error(e);
+        }
+        return orientation;
+    }
+});
+
 defineReadOnlyField("author");
 
 defineReadOnlyField("authorEmail");
@@ -63,7 +75,6 @@ function rotate(orientation) {
 }
 
 // Orientation Properties
-Object.defineProperty(_self, "orientation", {"value": window.webworks.execSync(ID, "currentOrientation"), "writable": false});
 Object.defineProperty(_self, "lockOrientation", {"value": lockOrientation, "writable": false});
 Object.defineProperty(_self, "unlockOrientation", {"value": unlockOrientation, "writable": false});
 Object.defineProperty(_self, "rotate", {"value": rotate, "writable": false});
