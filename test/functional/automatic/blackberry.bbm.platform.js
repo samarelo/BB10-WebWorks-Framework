@@ -51,9 +51,7 @@ describe("blackberry.bbm.platform", function () {
 });
 
 describe("blackberry.bbm.platform.self", function () {
-
     describe("self", function () {
-
         it('makes sure all the profile fields are read only', function () {
             runs(function () {
                 testBBMProfileReadOnly("displayName");
@@ -98,6 +96,78 @@ describe("blackberry.bbm.platform.self", function () {
                 expect(onDisplayPicture).toHaveBeenCalled();
             });
 
+        });
+    });
+
+    describe("profilebox", function () {
+        var onSuccess = jasmine.createSpy(),
+            onError = jasmine.createSpy(),
+            waitForTimeout = 10000,
+            item;
+
+        beforeEach(function () {
+            onSuccess.reset();
+            onError.reset();
+        });
+
+        it("should invoke success callback when adding an item", function () {
+            item = { text: "hello", cookie: "chocolate" };
+
+            runs(function () {
+                blackberry.bbm.platform.self.profilebox.addItem(item, onSuccess, onError);
+            });
+
+            waitsFor(function () {
+                return onSuccess.callCount;
+            }, "success never fired", waitForTimeout);
+
+            runs(function () {
+                item.id = jasmine.any(String);
+                item.iconId = -1;
+                expect(onSuccess).toHaveBeenCalledWith(item);
+            });
+        });
+        
+        it("should invoke error callback when adding an item", function () {
+            runs(function () {
+                blackberry.bbm.platform.self.profilebox.addItem({ }, onSuccess, onError);
+            });
+
+            waitsFor(function () {
+                return onError.callCount;
+            }, "error never fired", waitForTimeout);
+
+            runs(function () {
+                expect(onError).toHaveBeenCalled();
+            });
+        });
+        
+        it("should invoke success callback when removing an item", function () {
+            runs(function () {
+                blackberry.bbm.platform.self.profilebox.removeItem(item, onSuccess, onError);
+            });
+
+            waitsFor(function () {
+                return onSuccess.callCount;
+            }, "success never fired", waitForTimeout);
+
+            runs(function () {
+                expect(onSuccess).toHaveBeenCalledWith(item);
+            });
+        });
+        
+        it("should invoke error callback when removing an item", function () {
+            runs(function () {
+                blackberry.bbm.platform.self.profilebox.removeItem(item, onSuccess, onError);
+            });
+
+            waitsFor(function () {
+                return onError.callCount;
+            }, "error never fired", waitForTimeout);
+
+            runs(function () {
+                expect(onError).toHaveBeenCalled();
+            });
         });
     });
 });
