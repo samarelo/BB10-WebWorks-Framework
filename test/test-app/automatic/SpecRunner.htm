@@ -46,7 +46,10 @@
 
         function setJasmine() {
             //jasmineEnv.currentRunner_.queue.index = 0;
-            jasmineEnv.reporter.subReporters_[0] = new jasmine.HtmlReporter();
+            //jasmineEnv.reporter.subReporters_[0] = new jasmine.HtmlReporter();
+            jasmineEnv = jasmine.Env();
+            jasmineEnv.addReporter(new jasmine.HtmlReporter());
+            jasmineEnv.specFilter = globalSpecFilter;
         }
 
         function execJasmine() {
@@ -73,7 +76,8 @@
 
         document.addEventListener("webworksready", function () {
             document.getElementById('start').onclick = function () {
-                //removeOldTests();
+                removeOldTests();
+                setJasmine();
                 execJasmine();
             };
             document.getElementById('selectAll').onclick = function () {
