@@ -1,7 +1,7 @@
 describe("webview", function () {
-    var libPath = "./../../../",
-        request = require(libPath + "lib/request"),
-        utils = require(libPath + "lib/utils"),
+    var libPath = "./../../../lib/",
+        request = require(libPath + "request"),
+        webkitOriginAccess = require(libPath + "policy/webkitOriginAccess"),
         webview,
         mockedController,
         mockedWebview,
@@ -9,7 +9,7 @@ describe("webview", function () {
         globalCreate;
 
     beforeEach(function () {
-        webview = require(libPath + "lib/webview");
+        webview = require(libPath + "webview");
         mockedController = {
             enableWebInspector: undefined,
             enableCrossSiteXHR: undefined,
@@ -28,7 +28,6 @@ describe("webview", function () {
             url: undefined,
             extraHttpHeaders: undefined,
             setFileSystemSandbox: undefined,
-            addOriginAccessWhitelistEntry: jasmine.createSpy(),
             setGeometry: jasmine.createSpy(),
             setApplicationOrientation: jasmine.createSpy(),
             setExtraPluginDirectory: jasmine.createSpy(),
@@ -51,7 +50,8 @@ describe("webview", function () {
             getBackgroundColor: jasmine.createSpy(),
             allowWebEvent: jasmine.createSpy(),
             allowUserMedia: jasmine.createSpy(),
-            disallowUserMedia: jasmine.createSpy()
+            disallowUserMedia: jasmine.createSpy(),
+            addOriginAccessWhitelistEntry: jasmine.createSpy()
         };
         mockedApplication = {
         };
@@ -91,6 +91,7 @@ describe("webview", function () {
     describe("create", function () {
         it("sets up the visible webview", function () {
             spyOn(request, "init").andCallThrough();
+            spyOn(webkitOriginAccess, "addWebView");
             webview.create();
             waits(1);
             runs(function () {
@@ -107,9 +108,7 @@ describe("webview", function () {
                 expect(mockedController.dispatchEvent).toHaveBeenCalledWith("webview.initialized", jasmine.any(Array));
                 //The default config.xml only has access to WIDGET_LOCAL
                 //and has permission for two apis
-                expect(mockedWebview.addOriginAccessWhitelistEntry).toHaveBeenCalledWith('local://', utils.getURIPrefix(), true);
-                expect(mockedWebview.addOriginAccessWhitelistEntry).toHaveBeenCalledWith('local://', 'file://', true);
-                expect(mockedWebview.addOriginAccessWhitelistEntry).toHaveBeenCalledWith('file://', 'local://', true);
+                expect(webkitOriginAccess.addWebView).toHaveBeenCalledWith(mockedWebview);
             });
         });
 
