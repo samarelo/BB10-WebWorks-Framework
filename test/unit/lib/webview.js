@@ -1,11 +1,12 @@
 describe("webview", function () {
     var libPath = "./../../../lib/",
-        request = require(libPath + "request"),
+        networkResourceRequested = require(libPath + "webkitHandlers/networkResourceRequested"),
+        geolocationPermissionRequest = require(libPath + 'webkitHandlers/geolocationPermissionRequest'),
         webkitOriginAccess = require(libPath + "policy/webkitOriginAccess"),
         webview,
         mockedController,
         mockedWebview,
-        mockedApplication,
+        mockedQnx,
         globalCreate;
 
     beforeEach(function () {
@@ -37,6 +38,7 @@ describe("webview", function () {
             onContextMenuRequestEvent: undefined,
             onContextMenuCancelEvent: undefined,
             onNetworkResourceRequested: undefined,
+            onGeolocationPermissionRequest: undefined,
             destroy: jasmine.createSpy(),
             executeJavaScript: jasmine.createSpy(),
             windowGroup: undefined,
@@ -53,9 +55,7 @@ describe("webview", function () {
             disallowUserMedia: jasmine.createSpy(),
             addOriginAccessWhitelistEntry: jasmine.createSpy()
         };
-        mockedApplication = {
-        };
-        GLOBAL.qnx = {
+        mockedQnx = {
             callExtensionMethod: jasmine.createSpy(),
             webplatform: {
                 getController: function () {
@@ -74,13 +74,12 @@ describe("webview", function () {
                     }
                     return mockedWebview;
                 },
-                getApplication: function () {
-                    return mockedApplication;
-                }
+                getApplication: jasmine.createSpy()
             }
         };
+        GLOBAL.qnx = mockedQnx;
         GLOBAL.window = {
-            qnx: qnx
+            qnx: mockedQnx
         };
         GLOBAL.screen = {
             width : 1024,
@@ -88,9 +87,19 @@ describe("webview", function () {
         };
     });
 
+    afterEach(function () {
+        delete GLOBAL.qnx;
+        delete GLOBAL.window;
+        delete GLOBAL.screen;
+    });
+
     describe("create", function () {
         it("sets up the visible webview", function () {
-            spyOn(request, "init").andCallThrough();
+            var mockNetworkHandler = { networkResourceRequestedHandler: function onNetworkResourceRequested() {} },
+                mockGeolocationHandler = { onGeolocationPermissionRequest: function onGeolocationPermissionRequest() {} };
+
+            spyOn(networkResourceRequested, "createHandler").andReturn(mockNetworkHandler);
+            spyOn(geolocationPermissionRequest, "createHandler").andReturn(mockGeolocationHandler);
             spyOn(webkitOriginAccess, "addWebView");
             webview.create();
             waits(1);
@@ -99,10 +108,14 @@ describe("webview", function () {
                 expect(mockedWebview.active).toEqual(true);
                 expect(mockedWebview.zOrder).toEqual(0);
                 expect(mockedWebview.setGeometry).toHaveBeenCalledWith(0, 0, screen.width, screen.height);
-                expect(request.init).toHaveBeenCalledWith(mockedWebview);
-                expect(mockedWebview.onNetworkResourceRequested).toEqual(request.init(mockedWebview).networkResourceRequestedHandler);
                 expect(Object.getOwnPropertyDescriptor(webview, 'onContextMenuRequestEvent')).toEqual(jasmine.any(Object));
                 expect(Object.getOwnPropertyDescriptor(webview, 'onContextMenuCancelEvent')).toEqual(jasmine.any(Object));
+
+                expect(networkResourceRequested.createHandler).toHaveBeenCalledWith(mockedWebview);
+                expect(mockedWebview.onNetworkResourceRequested).toEqual(mockNetworkHandler.networkResourceRequestedHandler);
+
+                expect(geolocationPermissionRequest.createHandler).toHaveBeenCalled();
+                expect(mockedWebview.onGeolocationPermissionRequest).toEqual(mockGeolocationHandler.onGeolocationPermissionRequest);
 
                 expect(mockedWebview.allowWebEvent).toHaveBeenCalledWith("DialogRequested");
                 expect(mockedController.dispatchEvent).toHaveBeenCalledWith("webview.initialized", jasmine.any(Array));
