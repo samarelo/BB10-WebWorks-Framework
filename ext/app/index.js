@@ -19,6 +19,13 @@ var _config = require("./../../lib/config"),
     _appEvents = require("./../../lib/events/applicationEvents"),
     _orientation,
     _actionMap = {
+        pooled: {
+            context: _appEvents,
+            event: "pooled",
+            trigger: function () {
+                _event.trigger("pooled");
+            }
+        },
         swipedown: {
             context: _appEvents,
             event: "swipedown",
@@ -183,6 +190,11 @@ module.exports = {
             version: _config.version
         };
         success(ro);
+    },
+
+    setPooled : function (success, fail, args, env) {
+        qnx.webplatform.getApplication().setPooled();
+        success();
     },
 
     lockOrientation : function (success, fail, args, env) {

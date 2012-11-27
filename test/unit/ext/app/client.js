@@ -152,6 +152,13 @@ describe("app client", function () {
         });
     });
 
+    describe("setPooled", function () {
+        it("should call execSync with corresponding parameter", function () {
+            client.setPooled();
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "setPooled");
+        });
+    });
+
     describe("exit", function () {
         it("should call execSync", function () {
             client.exit();

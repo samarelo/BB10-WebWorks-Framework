@@ -17,6 +17,10 @@ var _self = {},
     ID = require("./manifest.json").namespace,
     readOnlyValues;
 
+_self.setPooled = function () {
+    return window.webworks.execSync(ID, "setPooled");
+};
+
 _self.exit = function () {
     return window.webworks.execSync(ID, "exit");
 };

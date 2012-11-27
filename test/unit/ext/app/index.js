@@ -18,6 +18,7 @@ var _apiDir = __dirname + "./../../../../ext/app/",
     events = require(_libDir + "event"),
     eventExt = require(__dirname + "./../../../../ext/event/index"),
     index,
+    mockedSetPooled,
     mockedExit,
     mockedRotate,
     mockedLockRotation,
@@ -71,6 +72,7 @@ describe("app index", function () {
     beforeEach(function () {
         config = require(_libDir + "config");
         index = require(_apiDir + "index");
+        mockedSetPooled = jasmine.createSpy("SetPooled");
         mockedExit = jasmine.createSpy("exit");
         mockedRotate = jasmine.createSpy();
         mockedLockRotation = jasmine.createSpy();
@@ -80,6 +82,7 @@ describe("app index", function () {
             webplatform: {
                 getApplication: function () {
                     return {
+                        setPooled: mockedSetPooled,
                         exit: mockedExit,
                         rotate: mockedRotate,
                         lockRotation: mockedLockRotation,
@@ -93,6 +96,7 @@ describe("app index", function () {
     afterEach(function () {
         config = null;
         index = null;
+        mockedSetPooled = null;
         mockedExit = null;
         mockedRotate = null;
         mockedLockRotation = null;
@@ -202,6 +206,14 @@ describe("app index", function () {
         });
     });
 
+    describe("setPooled", function () {
+        it("can call setPooled on the qnx.weblplatform Application", function () {
+            var success = jasmine.createSpy();
+            index.setPooled(success, null, null, null);
+            expect(mockedSetPooled).toHaveBeenCalled();
+        });
+    });
+
     describe("exit", function () {
         it("can call exit on the qnx.weblplatform Application", function () {
             var success = jasmine.createSpy();
@@ -222,6 +234,10 @@ describe("app index", function () {
 
         it("can register 'resume' event", function () {
             testRegisterEvent("resume");
+        });
+
+        it("can register 'pooled' event", function () {
+            testRegisterEvent("pooled");
         });
 
         it("can register 'swipedown' event", function () {
@@ -254,6 +270,10 @@ describe("app index", function () {
 
         it("can un-register 'resume' event", function () {
             testUnRegisterEvent("resume");
+        });
+
+        it("can un-register 'pooled' event", function () {
+            testUnRegisterEvent("pooled");
         });
 
         it("can un-register 'swipedown' event", function () {
