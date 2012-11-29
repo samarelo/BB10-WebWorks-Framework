@@ -19,6 +19,7 @@ var _apiDir = __dirname + "./../../../../ext/app/",
     eventExt = require(__dirname + "./../../../../ext/event/index"),
     index,
     mockedExit,
+    mockedExtendTerminate,
     mockedRotate,
     mockedLockRotation,
     mockedUnlockRotation,
@@ -72,6 +73,7 @@ describe("app index", function () {
         config = require(_libDir + "config");
         index = require(_apiDir + "index");
         mockedExit = jasmine.createSpy("exit");
+        mockedExtendTerminate = jasmine.createSpy("mockedExit");
         mockedRotate = jasmine.createSpy();
         mockedLockRotation = jasmine.createSpy();
         mockedUnlockRotation = jasmine.createSpy();
@@ -81,6 +83,7 @@ describe("app index", function () {
                 getApplication: function () {
                     return {
                         exit: mockedExit,
+                        extendTerminate: mockedExtendTerminate,
                         rotate: mockedRotate,
                         lockRotation: mockedLockRotation,
                         unlockRotation: mockedUnlockRotation
@@ -94,6 +97,7 @@ describe("app index", function () {
         config = null;
         index = null;
         mockedExit = null;
+        mockedExtendTerminate = null;
         mockedRotate = null;
         mockedLockRotation = null;
         mockedUnlockRotation = null;
@@ -207,6 +211,14 @@ describe("app index", function () {
             var success = jasmine.createSpy();
             index.exit(success, null, null, null);
             expect(mockedExit).toHaveBeenCalled();
+        });
+    });
+
+    describe("extendTerminate", function () {
+        it("can call extendTerminate on the qnx.weblplatform Application", function () {
+            var success = jasmine.createSpy();
+            index.extendTerminate(success);
+            expect(mockedExtendTerminate).toHaveBeenCalled();
         });
     });
 

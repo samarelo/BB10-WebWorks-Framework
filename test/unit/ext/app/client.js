@@ -188,4 +188,12 @@ describe("app client", function () {
             expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "rotate", {orientation: 'landscape'});
         });
     });
+
+    describe("extendTerminate", function () {
+        it("should call execSync", function () {
+            client.extendTerminate();
+            expect(mockedWebworks.execSync).toHaveBeenCalledWith(_ID, "extendTerminate");
+        });
+    });
+
 });

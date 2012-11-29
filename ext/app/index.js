@@ -40,6 +40,13 @@ var _config = require("./../../lib/config"),
                 _event.trigger("resume");
             }
         },
+        exit: {
+            context: _appEvents,
+            event: "exit",
+            trigger: function () {
+                _event.trigger("exit");
+            }
+        },
         keyboardOpening: {
             context: _appEvents,
             event: "keyboardOpening",
@@ -209,6 +216,11 @@ module.exports = {
     currentOrientation : function (success, fail, args, env) {
         var orientation = _orientation || angleToOrientation(window.orientation);
         success(orientation);
+    },
+
+    extendTerminate: function (success) {
+        window.qnx.webplatform.getApplication().extendTerminate();
+        success();
     },
 
     exit: function () {

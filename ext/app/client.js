@@ -21,6 +21,10 @@ _self.exit = function () {
     return window.webworks.execSync(ID, "exit");
 };
 
+_self.extendTerminate = function () {
+    return window.webworks.execSync(ID, "extendTerminate");
+};
+
 function getReadOnlyFields() {
     if (!readOnlyValues) {
         readOnlyValues = window.webworks.execSync(ID, "getReadOnlyFields", null);

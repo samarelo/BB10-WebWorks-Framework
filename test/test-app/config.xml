@@ -20,7 +20,7 @@
     <feature id="blackberry.app" required="true" version="1.0.0.0">
         <param name="backgroundColor" value="0xFFFFEFD5" />
     </feature>
-    <feature id="blackberry.system" required="true" version="1.0.0.0"/>
+<!--    <feature id="blackberry.system" required="true" version="1.0.0.0"/>
     <feature id="blackberry.connection" required="true" version="1.0.0.0"/>
     <feature id="blackberry.identity" required="true" version="1.0.0.0"/>
     <feature id="blackberry.event" required="true" version="1.0.0.0"/>
@@ -168,5 +168,5 @@
         <rim:permit>post_notification</rim:permit>
         <rim:permit system="true">_sys_use_consumer_push</rim:permit>
         <rim:permit>run_when_backgrounded</rim:permit>
-    </rim:permissions>
+    </rim:permissions>-->
 </widget>
