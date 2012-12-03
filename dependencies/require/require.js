@@ -41,7 +41,7 @@ var define,
             nameParts = baseName.split('/');
             nameParts.pop();
             nameParts = nameParts.concat(name.split('/'));
-            
+
             name = nameParts.reduce(function (previous, current,  index, array) {
                 var returnValue,
                     slashIndex;
@@ -51,7 +51,7 @@ var define,
                 if (previous !== '.') {
                     returnValue = previous;
                 }
-                
+
                 //If we have a .. then remove a chunk of previous
                 if (current === "..") {
                     slashIndex = previous.lastIndexOf('/');
@@ -74,7 +74,7 @@ var define,
             });
 
         }
-        
+
         //If there is no acceptable extension tack on a .js
         if (!hasValidExtension(name)) {
             name = name + DEFAULT_EXTENSION;
@@ -92,6 +92,7 @@ var define,
         localRequire.toUrl = function (moduleName, baseName) {
             return require.toUrl(moduleName, baseName || name);
         };
+        localRequire.cache = readyModules;
         dependencies.forEach(function (dependency) {
             if (dependency === 'require') {
                 args.push(localRequire);
@@ -216,11 +217,13 @@ var define,
                 buildModule(undefined, dependencies, callback);
             }, 0);
         }
-    }; 
+    };
 
     require.toUrl = function (originalName, baseName) {
         return normalizeName(originalName, baseName);
     };
+
+    require.cache = readyModules;
 
     //Use the AMD signature incase we ever want to change.
     //For now webworks will only be using (name, factory) signature.
@@ -230,7 +233,7 @@ var define,
             dependencies = ['require', 'exports', 'module'];
         }
 
-        //According to the AMDJS spec we should parse out the require statments 
+        //According to the AMDJS spec we should parse out the require statments
         //from factory.toString and add those to the list of dependencies
 
         //Normalize the name. Remove local:// and .js
@@ -238,7 +241,7 @@ var define,
         unpreparedModules[name] = {
             dependencies: dependencies,
             factory: factory
-        }; 
+        };
     };
 }());
 

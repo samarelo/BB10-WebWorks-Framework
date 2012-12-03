@@ -16,4 +16,22 @@
 
 module.exports = {
 
+    updateModule : function (success, fail, args, env) {
+        var moduleName = "./../../" + JSON.parse(decodeURIComponent(args.moduleName)),
+            newProperties = JSON.parse(decodeURIComponent(args.updates)),
+            utils = require("./../../lib/utils");
+
+        utils.mixin(newProperties, require(moduleName));
+
+        success();
+    },
+
+    resetModule: function (success, fail, args, env) {
+        var moduleName = "./../../" + JSON.parse(decodeURIComponent(args.moduleName));
+
+        delete require.cache[require.toUrl(moduleName)];
+        require(moduleName + ".js");
+
+        success();
+    }
 };

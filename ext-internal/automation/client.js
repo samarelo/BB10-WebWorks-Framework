@@ -136,4 +136,12 @@ _self.compareCurrentScreen = function (name, callback) {
         callback(internal.pps.syncRead("/pps/services/agent/puppetmaster/output").output.response);
     }, 1000);
 };
+
+_self.updateModule = function (moduleName, newProperties) {
+    window.webworks.execSync(ID, "updateModule", {moduleName: moduleName, updates: newProperties});
+};
+
+_self.resetModule = function (moduleName) {
+    window.webworks.execSync(ID, "resetModule", {moduleName: moduleName});
+};
 module.exports = _self;
