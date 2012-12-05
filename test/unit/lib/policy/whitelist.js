@@ -93,6 +93,18 @@ describe("whitelist", function () {
             expect(whitelist.isAccessAllowed("http://www.cnn.com")).toEqual(false);
         });
 
+        it("can allow access to non-whitelisted content HTTP URL", function () {
+            debugger;
+            var whitelist = new Whitelist({
+                hasMultiAccess : false,
+                accessList : [],
+                content : "http://www.google.com"
+            });
+
+            expect(whitelist.isAccessAllowed("http://www.google.com")).toEqual(true);
+            expect(whitelist.isAccessAllowed("http://www.cnn.com")).toEqual(false);
+        });
+
         it("can allow access to whitelisted URL with different case (host)", function () {
             var whitelist = new Whitelist({
                 hasMultiAccess : false,
