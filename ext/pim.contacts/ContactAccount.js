@@ -16,9 +16,13 @@
 var ContactAccount,
 
 ContactAccount = function (args) {
-    this.id = typeof args !== "undefined" && typeof args.id !== "undefined" ? args.id : "";
-    this.name = typeof args !== "undefined" && typeof args.name !== "undefined" ? args.name : "";
-    this.enterprise = typeof args !== "undefined" && typeof args.enterprise !== "undefined" && args.enterprise === 1 ? true : false;
+	var id = typeof args !== "undefined" && typeof args.id !== "undefined" ? args.id : "",
+        name = typeof args !== "undefined" && typeof args.name !== "undefined" ? args.name : "",
+        enterprise = typeof args !== "undefined" && typeof args.enterprise !== "undefined" && args.enterprise === 1 ? true : false;
+
+    Object.defineProperty(this, "id", { "value": id, "enumerable": true });
+    Object.defineProperty(this, "name", { "value": name, "enumerable": true });
+    Object.defineProperty(this, "enterprise", { "value": enterprise, "enumerable": true });
 };
 
 module.exports = ContactAccount;
