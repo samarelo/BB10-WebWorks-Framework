@@ -122,6 +122,22 @@ function validateFindArguments(findOptions) {
                 }
             });
         }
+
+        if (!error && findOptions.includeAccounts && Array.isArray(findOptions.includeAccounts)) {
+            findOptions.includeAccounts.forEach(function (acct) {
+                if (!error && (!acct.id || window.isNaN(window.parseInt(acct.id, 10)))) {
+                    error = true;
+                }
+            });
+        }
+
+        if (!error && findOptions.excludeAccounts && Array.isArray(findOptions.excludeAccounts)) {
+            findOptions.excludeAccounts.forEach(function (acct) {
+                if (!error && (!acct.id || window.isNaN(window.parseInt(acct.id, 10)))) {
+                    error = true;
+                }
+            });
+        }
     }
     return !error;
 }

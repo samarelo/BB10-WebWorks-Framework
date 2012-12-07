@@ -86,6 +86,20 @@ function onChildCardClosed(cb) {
     application.invocation.addEventListener("childCardClosed", callback);
 }
 
+function getAccountFilters(options) {
+    if (options.includeAccounts) {
+        options.includeAccounts = options.includeAccounts.map(function (acct) {
+            return acct.id;
+        });
+    }
+
+    if (options.excludeAccounts) {
+        options.excludeAccounts = options.excludeAccounts.map(function (acct) {
+            return acct.id;
+        });
+    }
+}
+
 module.exports = {
     find: function (success, fail, args) {
         var findOptions = {},
@@ -112,6 +126,7 @@ module.exports = {
             return;
         }
 
+        getAccountFilters(findOptions.options);
         pimContacts.getInstance().find(findOptions);
 
         success();

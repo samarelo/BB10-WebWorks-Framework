@@ -92,15 +92,16 @@ private:
     void populateNews(const bbpim::Contact& contact, Json::Value& contactNews);
     void populateActivity(const bbpim::Contact& contact, Json::Value& contactActivity);
 
-    static QSet<bbpim::ContactId> singleFieldSearch(const Json::Value& searchFieldsJson, const Json::Value& contactFields, bool favorite);
+    static QSet<bbpim::ContactId> singleFieldSearch(const Json::Value& searchFieldsJson, const Json::Value& contactFields, const bool favorite, const Json::Value& includeAccounts, const Json::Value& excludeAccounts);
     static QString getSortFieldValue(const bbpim::SortColumn::Type sortField, const bbpim::Contact& contact);
     static QList<bbpim::SearchField::Type> getSearchFields(const Json::Value& searchFieldsJson);
     static void getSortSpecs(const Json::Value& sort);
-    static QSet<bbpim::ContactId> getPartialSearchResults(const Json::Value& filter, const Json::Value& contactFields, const bool favorite);
+    static QSet<bbpim::ContactId> getPartialSearchResults(const Json::Value& filter, const Json::Value& contactFields, const bool favorite, const Json::Value& includeAccounts, const Json::Value& excludeAccounts);
     static bool lessThan(const bbpim::Contact& c1, const bbpim::Contact& c2);
     static std::string replaceAll(const std::string& s, const std::string& souce = "\"", const std::string& target = "\\\"");
     static std::string replaceString(const std::string& s);
     static QList<bbpim::AttributeKind::Type> getIncludeAttributesList(const Json::Value& contactFields, bbpim::ContactListFilters* listFilters = NULL);
+    static void getAccountFilters(bbpim::ContactSearchFilters* searchFilter, bbpim::ContactListFilters* listFilter, const Json::Value& includeAccounts, const Json::Value& excludeAccounts);
 
     // Helper functions for Save
     void addAttributeKind(bbpim::ContactBuilder& contactBuilder, const Json::Value& jsonObj, const std::string& field);
