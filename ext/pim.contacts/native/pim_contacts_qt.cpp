@@ -377,6 +377,21 @@ Json::Value PimContactsQt::InvokePicker(const Json::Value& args)
     return result;
 }
 
+Json::Value PimContactsQt::GetContactAccounts()
+{
+    Json::Value retVal;
+    Json::Value jsonAccount;
+
+    retVal["accounts"] = Json::Value();
+    QList<bb::pim::account::Account> accounts = bb::pim::account::AccountService().accounts(bb::pim::account::Service::Contacts);
+    for (int i = 0; i < accounts.size(); ++i) {
+        populateAccount(accounts[i], jsonAccount);
+        retVal["accounts"].append(jsonAccount);
+    }
+    retVal["_success"] = true;
+    return retVal;
+}
+
 /****************************************************************
  * Helper functions for Find
  ****************************************************************/
@@ -944,6 +959,13 @@ void PimContactsQt::populateActivity(const bbpim::Contact& contact, Json::Value&
         contactActivity.append(activity);
         ++k;
     }
+}
+
+void PimContactsQt::populateAccount(const bbpimacc::Account& account, Json::Value& jsonAccount)
+{
+    jsonAccount["id"] = account.id();
+    jsonAccount["name"] = account.displayName().isEmpty() ? account.provider().name().toStdString() : account.displayName().toStdString();
+    jsonAccount["emterprise"] = account.isEnterprise();
 }
 
 /****************************************************************

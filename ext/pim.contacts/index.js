@@ -208,6 +208,22 @@ module.exports = {
         onChildCardClosed(callback);
         pimContacts.getInstance().invokePicker(options);
         success();
+    },
+
+    getContactAccounts: function (success, fail, args) {
+        var result = {};
+
+        if (!_utils.hasPermission(config, "access_pimdomain_contacts")) {
+            success(null);
+            return;
+        }
+        result = pimContacts.getInstance().getContactAccounts();
+        if (result._success === true) {
+            success(result.accounts);
+        } else {
+            success(null);
+            return;
+        }        
     }
 };
 
@@ -245,6 +261,11 @@ JNEXT.PimContacts = function ()
 
     self.getId = function () {
         return self.m_id;
+    };
+
+    self.getContactAccounts = function () {
+        var value = JNEXT.invoke(self.m_id, "getContactAccounts");
+        return JSON.parse(value);
     };
 
     self.init = function () {

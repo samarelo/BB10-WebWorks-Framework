@@ -31,6 +31,7 @@
 #include <bb/pim/contacts/ContactListFilters.hpp>
 #include <bb/pim/account/AccountService.hpp>
 #include <bb/pim/account/Account.hpp>
+#include <bb/pim/account/Provider>
 #include <webworks_utils.hpp>
 
 #include <string>
@@ -79,6 +80,7 @@ public:
     Json::Value CloneContact(bbpim::Contact& contact, const Json::Value& attributeObj);
     Json::Value GetContact(const Json::Value& argsObj);
     static Json::Value InvokePicker(const Json::Value& args);
+    static Json::Value GetContactAccounts();
 
 private:
     // Helper functions for Find
@@ -91,6 +93,7 @@ private:
     void populatePhotos(const bbpim::Contact& contact, Json::Value& contactPhotos);
     void populateNews(const bbpim::Contact& contact, Json::Value& contactNews);
     void populateActivity(const bbpim::Contact& contact, Json::Value& contactActivity);
+    static void populateAccount(const bbpimacc::Account& account, Json::Value& jsonAccount);
 
     static QSet<bbpim::ContactId> singleFieldSearch(const Json::Value& searchFieldsJson, const Json::Value& contactFields, const bool favorite, const Json::Value& includeAccounts, const Json::Value& excludeAccounts);
     static QString getSortFieldValue(const bbpim::SortColumn::Type sortField, const bbpim::Contact& contact);

@@ -28,6 +28,7 @@ var _self = {},
     ContactNews = require("./ContactNews"),
     ContactActivity = require("./ContactActivity"),
     ContactPickerOptions = require("./ContactPickerOptions"),
+    ContactAccount = require("./ContactAccount"),
     contactUtils = require("./contactUtils"),
     utils = require("./../../lib/utils"),
     _contactInvokeEventId = "invokeContactPicker.invokeEventId",
@@ -181,6 +182,17 @@ _self.invokeContactPicker = function (options, onDone, onCancel, onInvoke) {
     }
 
     return window.webworks.execAsync(_ID, "invokeContactPicker", {options: options || ""});
+};
+
+_self.getContactAccounts = function () {
+    var obj = window.webworks.execSync(_ID, "getContactAccounts"),
+        accounts = [];
+
+    obj.forEach(function (account) {
+        accounts.push(new ContactAccount(account));
+    });
+
+    return accounts;
 };
 
 _self.Contact = Contact;
