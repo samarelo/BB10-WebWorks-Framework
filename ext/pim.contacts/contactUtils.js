@@ -106,7 +106,7 @@ function validateFindArguments(findOptions) {
         }
 
         // findOptions.sort is optional
-        if (!error && findOptions.sort && findOptions.sort.length) {
+        if (!error && findOptions.sort && Array.isArray(findOptions.sort)) {
             findOptions.sort.forEach(function (s) {
                 switch (s.fieldName) {
                 case ContactFindOptions.SORT_FIELD_GIVEN_NAME:

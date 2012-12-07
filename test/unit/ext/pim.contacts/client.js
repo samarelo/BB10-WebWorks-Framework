@@ -60,8 +60,10 @@ describe("pim.contacts client", function () {
                 filter: [{
                     fieldName: ContactFindOptions.SEARCH_FIELD_GIVEN_NAME,
                     fieldValue: "John"
-                }], // filter
-                limit: 5 // limit
+                }],
+                limit: 5,
+                excludeAccounts: [{id: "1"}, {id: "2"}],
+                includeAccounts: [{id: "3"}, {id: "4"}]
             }, successCb, errorCb);
             expect(mockedWebworks.execAsync).toHaveBeenCalledWith(_ID, "find", jasmine.any(Object));
             expect(mockedWebworks.event.once).toHaveBeenCalledWith(_ID, jasmine.any(String), jasmine.any(Function));
@@ -180,6 +182,30 @@ describe("pim.contacts client", function () {
                     fieldName: ContactFindOptions.SORT_FIELD_GIVEN_NAME
                 }], // sort
                 limit: 5 // limit
+            }, successCb, errorCb);
+
+            expect(errorCb).toHaveBeenCalledWith(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
+            expect(successCb).not.toHaveBeenCalled();
+        });
+
+        it("error callback is invoked for pim.contacts.find() if includeAccounts is invalid", function () {
+            var successCb = jasmine.createSpy(),
+                errorCb = jasmine.createSpy();
+
+            client.find(["name"], {
+                includeAccounts: [{id: "1"}, {id: "abc"}]
+            }, successCb, errorCb);
+
+            expect(errorCb).toHaveBeenCalledWith(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
+            expect(successCb).not.toHaveBeenCalled();
+        });
+
+        it("error callback is invoked for pim.contacts.find() if excludeAccounts is invalid", function () {
+            var successCb = jasmine.createSpy(),
+                errorCb = jasmine.createSpy();
+
+            client.find(["name"], {
+                excludeAccounts: [{id: "1"}, {id: "abc"}]
             }, successCb, errorCb);
 
             expect(errorCb).toHaveBeenCalledWith(new ContactError(ContactError.INVALID_ARGUMENT_ERROR));
