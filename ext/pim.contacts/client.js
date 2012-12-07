@@ -206,5 +206,6 @@ _self.ContactFindOptions = ContactFindOptions;
 _self.ContactNews = ContactNews;
 _self.ContactActivity = ContactActivity;
 _self.ContactPickerOptions = ContactPickerOptions;
+_self.ContactAccount = ContactAccount;
 
 module.exports = _self;

@@ -218,11 +218,10 @@ module.exports = {
             return;
         }
         result = pimContacts.getInstance().getContactAccounts();
-        if (result._success === true) {
+        if (result._success) {
             success(result.accounts);
         } else {
             success(null);
-            return;
         }        
     }
 };

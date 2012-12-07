@@ -965,7 +965,7 @@ void PimContactsQt::populateAccount(const bbpimacc::Account& account, Json::Valu
 {
     jsonAccount["id"] = account.id();
     jsonAccount["name"] = account.displayName().isEmpty() ? account.provider().name().toStdString() : account.displayName().toStdString();
-    jsonAccount["emterprise"] = account.isEnterprise();
+    jsonAccount["enterprise"] = account.isEnterprise();
 }
 
 /****************************************************************
