@@ -18,7 +18,7 @@ var ContactAccount,
 ContactAccount = function (args) {
 	var id = typeof args !== "undefined" && typeof args.id !== "undefined" ? args.id : "",
         name = typeof args !== "undefined" && typeof args.name !== "undefined" ? args.name : "",
-        enterprise = typeof args !== "undefined" && typeof args.enterprise !== "undefined" && args.enterprise === 1 ? true : false;
+        enterprise = typeof args !== "undefined" && typeof args.enterprise !== "undefined" ?  args.enterprise  : false;
 
     Object.defineProperty(this, "id", { "value": id, "enumerable": true });
     Object.defineProperty(this, "name", { "value": name, "enumerable": true });

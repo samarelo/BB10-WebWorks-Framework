@@ -15,6 +15,7 @@
  */
 
 #include <json/value.h>
+#include <json/writer.h>
 #include <stdio.h>
 #include <bb/cascades/pickers/ContactPicker>
 #include <bb/cascades/pickers/ContactSelectionMode>
@@ -35,6 +36,7 @@ KindToStringMap PimContactsQt::_kindAttributeMap;
 SubKindToStringMap PimContactsQt::_subKindAttributeMap;
 QList<bbpim::SortSpecifier> PimContactsQt::_sortSpecs;
 std::map<bbpim::ContactId, bbpim::Contact> PimContactsQt::_contactSearchMap;
+ContactAccount& PimContactsQt::_contactAccount = ContactAccount::GetAccountInstance();
 
 PimContactsQt::PimContactsQt()
 {
@@ -170,7 +172,6 @@ Json::Value PimContactsQt::CreateContact(const Json::Value& attributeObj)
 
     bbpim::ContactService service;
     newContact = service.createContact(newContact, false);
-
     Json::Value returnObj;
 
     if (newContact.isValid()) {
@@ -380,13 +381,11 @@ Json::Value PimContactsQt::InvokePicker(const Json::Value& args)
 Json::Value PimContactsQt::GetContactAccounts()
 {
     Json::Value retVal;
-    Json::Value jsonAccount;
 
     retVal["accounts"] = Json::Value();
-    QList<bb::pim::account::Account> accounts = bb::pim::account::AccountService().accounts(bb::pim::account::Service::Contacts);
+    QList<bb::pim::account::Account> accounts = _contactAccount.GetContactAccounts();
     for (int i = 0; i < accounts.size(); ++i) {
-        populateAccount(accounts[i], jsonAccount);
-        retVal["accounts"].append(jsonAccount);
+        retVal["accounts"].append(ContactAccount::account2Json(accounts[i]));
     }
     retVal["_success"] = true;
     return retVal;
@@ -753,6 +752,14 @@ Json::Value PimContactsQt::populateContact(const bbpim::Contact& contact, const 
         }
     }
 
+    contactItem["sourceAccounts"] = Json::Value();
+    // fetch sourceAccounts by sourceSourceIds
+    for (int i = 0; i < contact.sourceAccountIds().size(); ++i) {
+        bb::pim::account::AccountKey id = contact.sourceAccountIds()[i];
+        bb::pim::account::Account account = _contactAccount.GetAccount(id);
+        contactItem["sourceAccounts"].append(ContactAccount::account2Json(account));
+    }
+
     contactItem["id"] = Json::Value(contact.id());
     contactItem["favorite"] = Json::Value(contact.isFavourite()); // always populate favorite
 
@@ -959,13 +966,6 @@ void PimContactsQt::populateActivity(const bbpim::Contact& contact, Json::Value&
         contactActivity.append(activity);
         ++k;
     }
-}
-
-void PimContactsQt::populateAccount(const bbpimacc::Account& account, Json::Value& jsonAccount)
-{
-    jsonAccount["id"] = account.id();
-    jsonAccount["name"] = account.displayName().isEmpty() ? account.provider().name().toStdString() : account.displayName().toStdString();
-    jsonAccount["enterprise"] = account.isEnterprise();
 }
 
 /****************************************************************

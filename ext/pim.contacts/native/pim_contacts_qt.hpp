@@ -38,6 +38,8 @@
 #include <utility>
 #include <map>
 
+ #include "contact_account.hpp"
+
 class PimContacts;
 
 namespace webworks {
@@ -138,6 +140,7 @@ private:
     static QList<bbpim::SortSpecifier> _sortSpecs;
 
     static std::map<bbpim::ContactId, bbpim::Contact> _contactSearchMap;
+    static ContactAccount& _contactAccount;
 };
 
 } // namespace webworks
