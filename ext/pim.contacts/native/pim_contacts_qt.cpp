@@ -165,7 +165,11 @@ Json::Value PimContactsQt::CreateContact(const Json::Value& attributeObj)
     }
 
     bbpim::ContactService service;
-    newContact = service.createContact(newContact, false);
+
+    fprintf(stderr, "DBGHOME home=%s\n", attributeObj["home"].asCString());
+    fprintf(stderr, "DBGHOME isWork=%d\n", attributeObj["isWork"].asBool());
+
+    newContact = service.createContact(newContact, attributeObj["isWork"].asBool());
 
     Json::Value returnObj;
 

@@ -86,6 +86,11 @@ function onChildCardClosed(cb) {
     application.invocation.addEventListener("childCardClosed", callback);
 }
 
+function isWork() {
+    var homeDir = window.qnx.webplatform.getApplication().getEnv("HOME");
+    return /1000-enterprise/.test(homeDir);
+}
+
 module.exports = {
     find: function (success, fail, args) {
         var findOptions = {},
@@ -153,6 +158,9 @@ module.exports = {
         if (!checkPermission(success, attributes["_eventId"])) {
             return;
         }
+
+        attributes["isWork"] = isWork();
+        attributes["home"] = window.qnx.webplatform.getApplication().getEnv("HOME");
 
         pimContacts.getInstance().save(attributes);
         success();
