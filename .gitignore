@@ -41,3 +41,6 @@ test/test-app/js/jasmine-html.js
 
 #Test-suite
 test-runner.json
+test/test-suite/data
+test/test-suite/Apps/wwTest/config.xml
+test/test-suite/Apps/wwTest/spec

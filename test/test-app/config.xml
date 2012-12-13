@@ -114,8 +114,7 @@
         <feature id="blackberry.app" />
     </access>
 
-
-
+    <access uri="http://169.254.0.2:9644" />
 
     <access uri="file:///accounts/1000/shared/documents/textData.txt" />
     <access uri="file:///accounts/1000/shared/documents/subdir/textData.txt" />
