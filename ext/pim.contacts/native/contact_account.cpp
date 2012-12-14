@@ -18,8 +18,8 @@
 
 ContactAccount& ContactAccount::GetAccountInstance()
 {
-	static ContactAccount ca;
-	return ca;
+    static ContactAccount ca;
+    return ca;
 }
 
 ContactAccount::ContactAccount()
@@ -37,12 +37,12 @@ QList<bb::pim::account::Account> ContactAccount::GetContactAccounts()
 
 bb::pim::account::Account ContactAccount::GetAccount(bb::pim::account::AccountKey id)
 {
-	return _accountMap.value(id);	
+    return _accountMap.value(id);
 }
 
 Json::Value ContactAccount::account2Json(const bb::pim::account::Account& account)
 {
-	Json::Value jsonAccount;
+    Json::Value jsonAccount;
     jsonAccount["id"] = account.id();
     jsonAccount["name"] = account.displayName().isEmpty() ? account.provider().name().toStdString() : account.displayName().toStdString();
     jsonAccount["enterprise"] = account.isEnterprise() == 1 ? true : false;
@@ -53,13 +53,13 @@ Json::Value ContactAccount::account2Json(const bb::pim::account::Account& accoun
 void ContactAccount::fetchContactAccounts()
 {
     QList<bb::pim::account::Account> accounts = _accountService.accounts(bb::pim::account::Service::Contacts);
-    
+
     _accounts.clear();
     _accountMap.clear();
     for (QList<bb::pim::account::Account>::const_iterator it = accounts.begin(); it != accounts.end(); ++it) {
-        if ( (it->id() != 4) && (it->id() != 6)) {
-        	_accounts.append(*it);
-        	_accountMap.insert(it->id(), (bb::pim::account::Account)(*it));
+        if ((it->id() != 4) && (it->id() != 6)) {
+            _accounts.append(*it);
+            _accountMap.insert(it->id(), (bb::pim::account::Account)(*it));
         }
     }
 }

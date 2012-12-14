@@ -40,7 +40,7 @@ public:
 private:
     ContactAccount();
     ~ContactAccount();
-    ContactAccount(ContactAccount const&);
+    explicit ContactAccount(ContactAccount const&);
     void operator=(ContactAccount const&);
     // Refresh the accounts list and map
     void fetchContactAccounts();

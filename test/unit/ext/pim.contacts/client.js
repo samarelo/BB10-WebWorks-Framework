@@ -344,4 +344,26 @@ describe("pim.contacts client", function () {
             expect(cancelCb).not.toHaveBeenCalled();
         });
     });
+
+    describe("getContactAccounts", function () {
+        beforeEach(function () {
+            var mockAccounts = [
+                    {'id': 2, 'name': 'local', 'enterprise': 'false'},
+                    {'id': 123456, 'name': 'fake account', 'enterprise': 'false'}
+                ];
+            GLOBAL.window = GLOBAL;
+            GLOBAL.window.webworks = {
+                execSync: jasmine.createSpy("webworks.execSync").andReturn(mockAccounts)
+            };
+        });
+
+        it("has method getContactAccounts", function () {
+            expect(client.getContactAccounts).toBeDefined();
+        });
+
+        it("returns contact accounts", function () {
+            var accounts = client.getContactAccounts();
+            expect(accounts).toBeDefined();
+        });
+    });
 });

@@ -38,7 +38,7 @@
 #include <utility>
 #include <map>
 
- #include "contact_account.hpp"
+#include "contact_account.hpp"
 
 class PimContacts;
 
